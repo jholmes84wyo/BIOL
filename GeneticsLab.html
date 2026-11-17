@@ -1,0 +1,1334 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Genetics Virtual Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Same notebook layout as the Lab 12 virtual lab: sticky part navigation, one part per view */
+:root{
+  --bg:#f4f6f1; --surface:#ffffff; --surface-2:#eaefe4; --ink:#1b2416; --muted:#46543e; --line:#d5ddcc;
+  --accent:#31591b; --accent-ink:#ffffff;
+  --good:#205f36; --good-bg:#e5f3ea; --bad:#912727; --bad-bg:#f8e6e6; --hint:#23547f; --hint-bg:#e6eef8;
+  --pea-y:#f2d24b; --pea-y-s:#a8861d; --pea-g:#55862b; --pea-g-s:#2f4f15;
+  --ped-fill:#1b2416;
+  --f-display:"Young Serif", Georgia, "Times New Roman", serif;
+  --f-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#121610; --surface:#1b2118; --surface-2:#252d21; --ink:#e8eee2; --muted:#b5c3ac; --line:#36402f;
+  --accent:#a6d27f; --accent-ink:#14200c;
+  --good:#79d39a; --good-bg:#1d3326; --bad:#f39191; --bad-bg:#3a1f22; --hint:#93bdf0; --hint-bg:#1c2a3b;
+  --ped-fill:#e8eee2; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#121610; --surface:#1b2118; --surface-2:#252d21; --ink:#e8eee2; --muted:#b5c3ac; --line:#36402f;
+  --accent:#a6d27f; --accent-ink:#14200c;
+  --good:#79d39a; --good-bg:#1d3326; --bad:#f39191; --bad-bg:#3a1f22; --hint:#93bdf0; --hint-bg:#1c2a3b;
+  --ped-fill:#e8eee2; color-scheme:dark }
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55}
+.wrap{max-width:1080px;margin:0 auto;padding-left:16px;padding-right:16px}
+header.top{background:var(--surface);border-bottom:1px solid var(--line)}
+header.top .wrap{padding-block:22px 16px;display:flex;flex-wrap:wrap;gap:16px 32px;align-items:flex-end;justify-content:space-between}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1,h2,h3,h4{font-family:var(--f-display);font-weight:400;text-wrap:balance;line-height:1.2;margin:0}
+h1{font-size:clamp(28px,4vw,40px)} h2{font-size:28px} h3{font-size:20px} h4{font-size:17px}
+.namebox{display:flex;flex-wrap:wrap;gap:10px}
+.namebox label{display:flex;flex-direction:column;font-size:13px;color:var(--muted);gap:4px}
+input[type=text],input[type=number],textarea,select{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:8px 10px}
+input[type=text]{width:220px;max-width:100%}
+input.sm{width:96px;font-family:var(--f-mono)}
+input.xs{width:76px;font-family:var(--f-mono);padding:6px 8px}
+textarea{width:100%;min-height:96px;resize:vertical;line-height:1.5}
+input.ok{border-color:var(--good);background:var(--good-bg)}
+input.no{border-color:var(--bad);background:var(--bad-bg)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+nav.parts{position:sticky;top:0;z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+nav.parts .wrap{display:flex;gap:4px;overflow-x:auto;padding-block:8px;scrollbar-width:thin}
+nav.parts a{flex:none;text-decoration:none;color:var(--muted);padding:7px 12px;border-radius:6px;font-size:14px;white-space:nowrap}
+nav.parts a .n{font-family:var(--f-mono);font-size:12px;margin-right:6px;color:var(--muted)}
+nav.parts a[aria-current="page"]{background:var(--accent);color:var(--accent-ink)}
+nav.parts a[aria-current="page"] .n{color:var(--accent-ink)}
+nav.parts a:hover:not([aria-current]){background:var(--surface-2);color:var(--ink)}
+main .wrap{padding-block:28px 64px}
+section.view{display:grid;gap:22px}
+.lede,.prose{max-width:68ch}
+.prose p{margin:0 0 .8em}
+.prose p:last-child{margin-bottom:0}
+.muted{color:var(--muted)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;min-width:0}
+.stack{display:grid;gap:12px}
+.stack>*,section.view>*,.qs>*,.step>*{min-width:0}
+.grid2{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:820px){.grid2{grid-template-columns:minmax(0,1fr)}}
+button{font:inherit;cursor:pointer;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:7px 12px}
+button:hover:not(:disabled){border-color:var(--accent)}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+button:disabled{opacity:.5;cursor:not-allowed}
+.seg{justify-self:start;display:inline-flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.seg button{border:0;border-radius:0;border-right:1px solid var(--line)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.qnum{font-family:var(--f-mono);font-size:12px;color:var(--accent);letter-spacing:.06em;text-transform:uppercase}
+.q{display:grid;gap:8px}
+.q p{margin:0}
+.qs{display:grid;gap:20px}
+.step{display:grid;gap:10px;border-left:3px solid var(--accent);padding:2px 0 2px 14px}
+.step .lab{font-family:var(--f-mono);font-size:12px;color:var(--accent);letter-spacing:.06em;text-transform:uppercase}
+.step p{margin:0}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font-weight:700;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+td.num,th.num{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto;max-width:100%}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.formula{font-family:var(--f-mono);background:var(--surface-2);border-radius:6px;padding:10px 12px;overflow-x:auto;white-space:nowrap}
+.ov-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.ov-grid a{display:block;text-decoration:none;color:inherit;padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.ov-grid a:hover{border-color:var(--accent)}
+.ov-grid .n{font-family:var(--f-mono);font-size:12px;color:var(--accent)}
+.ov-grid strong{display:block;font-family:var(--f-display);font-weight:400;font-size:18px;margin:2px 0 4px}
+.ov-grid span.d{font-size:14px;color:var(--muted)}
+.fb{font-size:14px;padding:8px 12px;border-radius:6px}
+.fb.good{background:var(--good-bg);color:var(--good)}
+.fb.bad{background:var(--bad-bg);color:var(--bad)}
+.fb.hint{background:var(--hint-bg);color:var(--hint)}
+.fbs{display:grid;gap:6px}
+.opts{display:grid;gap:6px}
+.opts label{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border:1px solid var(--line);border-radius:6px;cursor:pointer;background:var(--surface)}
+.opts label:hover{border-color:var(--accent)}
+.opts input{margin-top:5px}
+.note{font-size:14px;color:var(--muted)}
+.foot-nav{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:16px}
+.callout{border-left:3px solid var(--hint);background:var(--hint-bg);padding:10px 14px;border-radius:0 8px 8px 0;font-size:15px}
+.callout strong{color:var(--hint)}
+/* WCAG 2.1 AA improvements */
+.nav-button{display:inline-flex;align-items:center;min-height:44px;padding:8px 12px;border:1px solid var(--line);border-radius:6px;text-decoration:none;background:var(--surface);color:var(--ink)}
+.nav-button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.nav-button:hover{border-color:var(--accent);text-decoration:underline}
+.skip-link{position:absolute;left:12px;top:-100px;z-index:100;padding:12px 18px;background:var(--surface);color:var(--ink);border:3px solid var(--accent);border-radius:6px}
+.skip-link:focus{top:8px}
+:focus-visible{outline:3px solid var(--ink);outline-offset:3px;box-shadow:0 0 0 5px var(--surface)}
+input,select,textarea,button,nav.parts a{min-height:40px}
+input[type=radio],input[type=checkbox]{min-height:auto;width:18px;height:18px;accent-color:var(--accent)}
+button:focus-visible,.pea:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.q label{font-weight:700}
+.q textarea{font-weight:400}
+.status-text{font-size:14px;line-height:1.5}
+.chart-data{font-size:14px;margin:8px 0 0}
+.chart-data th,.chart-data td{text-transform:none;letter-spacing:0;font-size:14px}
+.visually-hidden{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+@media(max-width:480px){.panel{padding:12px}.wrap{padding-left:12px;padding-right:12px}.pun td input{width:61px;min-width:0}.pun th{min-width:40px;padding:5px}.pun td button.cell{width:65px;min-height:57px}.bars .br{grid-template-columns:42px minmax(0,1fr) 55px}}
+@media(prefers-contrast:more){:root{--line:#66735c}button,input,select,textarea{border-width:2px}}
+/* Coins */
+.coins{display:flex;gap:28px;justify-content:center;flex-wrap:wrap;padding:8px 0}
+.coinbox{display:grid;justify-items:center;gap:6px;font-size:13px;color:var(--muted);text-align:center}
+.coin{width:92px;height:92px;border-radius:50%;display:grid;place-items:center;font-family:var(--f-display);font-size:40px;color:#4a3a08;
+  background:radial-gradient(circle at 35% 30%,#fbe9a6,#d9b440 60%,#a9871f);box-shadow:inset 0 0 0 5px rgba(0,0,0,.12),0 2px 6px rgba(0,0,0,.2)}
+.coin.tails{background:radial-gradient(circle at 35% 30%,#eceff1,#b9c0c6 60%,#868f97);color:#2c3338}
+.coin.flip{animation:flip .55s ease-in-out}
+@keyframes flip{0%{transform:rotateY(0) translateY(0)}50%{transform:rotateY(540deg) translateY(-26px)}100%{transform:rotateY(1080deg) translateY(0)}}
+.chips{display:flex;flex-wrap:wrap;gap:4px;min-height:28px}
+.chip{font-family:var(--f-mono);font-size:12px;padding:2px 7px;border-radius:4px;background:var(--surface-2)}
+.meter{height:10px;background:var(--surface-2);border-radius:5px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--accent);width:0}
+.bars{display:grid;gap:6px}
+.bars .br{display:grid;grid-template-columns:70px minmax(0,1fr) 64px;gap:8px;align-items:center;font-size:14px}
+.bars .track{position:relative;height:16px;background:var(--surface-2);border-radius:3px}
+.bars .fill{position:absolute;inset:0 auto 0 0;background:var(--accent);border-radius:3px}
+.bars .exp{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink)}
+/* Chi widget */
+.chi input.xs{width:84px}
+.chi td,.chi th{padding:6px 8px}
+.critT td,.critT th{padding:4px 10px}
+/* Punnett */
+.pun{border-collapse:separate;border-spacing:4px;width:auto}
+.pun th,.pun td{border:0;padding:0;text-align:center}
+.pun th{font-family:var(--f-mono);font-size:15px;color:var(--ink);text-transform:none;letter-spacing:0;background:var(--surface-2);border-radius:6px;padding:8px;min-width:58px}
+.pun th.corner{background:transparent;font-size:11px;color:var(--muted);font-family:var(--f-body)}
+.pun td input{width:74px;text-align:center;font-family:var(--f-mono);padding:8px 4px}
+.pun td button.cell{width:82px;min-height:58px;padding:4px;display:grid;gap:2px;place-items:center;font-family:var(--f-mono);font-size:14px;border-width:2px}
+.pun td button.cell small{font-family:var(--f-body);font-size:11px;line-height:1.1}
+.pun td button.cell.no{border-color:var(--bad);border-style:dashed}
+.ph0{background:#f2d24b!important;color:#2a2205!important}
+.ph1{background:#c99a2e!important;color:#1f1603!important}
+.ph2{background:#8fbf5a!important;color:#14200a!important}
+.ph3{background:#3e6b1f!important;color:#f3f8ee!important}
+.palette{display:flex;flex-wrap:wrap;gap:6px}
+.palette button{border-width:2px}
+.palette button[aria-pressed="true"]{outline:3px solid var(--ink);outline-offset:1px}
+/* Peas */
+.tray{background:#6b4f33;border-radius:12px;padding:10px}
+.tray svg{display:block;width:100%;height:auto;border-radius:6px;background:#8a6a47}
+.pea{cursor:pointer}
+.pea circle.b{stroke-width:1.6}
+.pea.y circle.b{fill:var(--pea-y);stroke:var(--pea-y-s)}
+.pea.g circle.b{fill:var(--pea-g);stroke:var(--pea-g-s)}
+.pea .shine{fill:#fff;opacity:.45;pointer-events:none}
+.pea .mk{fill:none;stroke:#1a1a1a;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+.pea .ring{fill:none;stroke:none;stroke-width:3;pointer-events:none}
+.pea .lt{font:700 12px/1 "Atkinson Hyperlegible",system-ui,sans-serif;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.pea.y .lt{fill:#3d3004} .pea.g .lt{fill:#f3f8ee}
+.pea.marked circle.b{opacity:.45}
+.pea:focus{outline:none}
+.pea:focus-visible .ring{stroke:#ffe14d;stroke-width:4}
+/* Pedigree */
+.ped svg{width:100%;max-width:440px;height:auto;display:block}
+.ped .sh{fill:var(--surface);stroke:var(--ink);stroke-width:2}
+.ped .sh.fill{fill:var(--ped-fill)}
+.ped .ln{stroke:var(--ink);stroke-width:2;fill:none}
+.ped .t{fill:var(--ink);font:13px "Atkinson Hyperlegible",system-ui,sans-serif;text-anchor:middle}
+.ped .g{fill:var(--accent);font:600 14px "IBM Plex Mono",monospace;text-anchor:middle}
+.ped .q{fill:var(--muted);font:700 16px "Atkinson Hyperlegible",sans-serif;text-anchor:middle;dominant-baseline:central}
+.ped .qf{fill:var(--surface)}
+/* Family */
+.trait{display:grid;gap:14px}
+.famgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.famgrid label{display:grid;gap:4px;font-size:14px;color:var(--muted)}
+.famgrid select{width:100%}
+.dotplot svg{width:100%;height:auto;display:block}
+.dotplot .ax{stroke:var(--muted);stroke-width:1}
+.dotplot .crit{stroke:var(--bad);stroke-width:2;stroke-dasharray:5 4}
+.dotplot .d{fill:var(--accent)}
+.dotplot .d.hi{fill:var(--bad)}
+.dotplot text{fill:var(--muted);font:12px "IBM Plex Mono",monospace}
+#sheet{min-height:420px;font-family:var(--f-mono);font-size:13px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to current lab content</a>
+<header class="top">
+  <div class="wrap">
+    <div>
+      <div class="eyebrow">General Biology · Lab 14 · Virtual</div>
+      <h1>Genetics Virtual Lab</h1>
+    </div>
+    <div class="namebox">
+      <label for="stuName">Your name<input type="text" id="stuName" autocomplete="name" placeholder="First and last name"></label>
+      <label for="stuPartners">Partners (optional)<input type="text" id="stuPartners" placeholder="Names, if you worked with others"></label>
+    </div>
+  </div>
+</header>
+<nav class="parts" aria-label="Lab parts">
+  <div class="wrap" id="navlinks">
+    <a href="#overview" data-v="overview"><span class="n">00</span>Overview</a>
+    <a href="#coins" data-v="coins"><span class="n">01</span>Coins &amp; chi-square</a>
+    <a href="#albinism" data-v="albinism"><span class="n">02</span>Albinism</a>
+    <a href="#mono" data-v="mono"><span class="n">03</span>Mystery peas</a>
+    <a href="#dihybrid" data-v="dihybrid"><span class="n">04</span>Two-gene Punnett</a>
+    <a href="#family" data-v="family"><span class="n">05</span>Family traits</a>
+    <a href="#submit" data-v="submit"><span class="n">06</span>Answer sheet</a>
+  </div>
+</nav>
+
+<main id="main-content" tabindex="-1"><div class="wrap">
+
+<!-- OVERVIEW -->
+<section class="view" id="v-overview" aria-label="Lab overview">
+  <div class="prose lede">
+    <p>During the 1860s, the Austrian monk Gregor Mendel worked out the basic rules of inheritance using garden peas. He succeeded because he followed one trait at a time, counted thousands of offspring, and kept careful records. He was also lucky: the pea traits he chose are each controlled by a single gene, with one allele completely dominant over the other.</p>
+    <p><strong>Mendel's Law of Segregation</strong> says that each parent has two alleles for a gene, those two alleles separate when gametes form (so each gamete carries just one), and fertilization brings two alleles back together. In this lab you will model segregation with coins, test your results with a chi-square test, solve a human inheritance problem, identify unknown parents from their offspring, build a two-gene Punnett square, and trace a few traits through your own family.</p>
+  </div>
+  <div class="ov-grid">
+    <a href="#coins"><span class="n">PART 1</span><strong>Coins &amp; chi-square</strong><span class="d">Flip coins as gametes, then use a guided chi-square test to judge your results.</span></a>
+    <a href="#albinism"><span class="n">PART 2</span><strong>Albinism</strong><span class="d">Work out genotypes in a family step by step, with feedback at each step.</span></a>
+    <a href="#mono"><span class="n">PART 3</span><strong>Mystery peas</strong><span class="d">Count a batch of pea seeds and figure out what the parent plants were.</span></a>
+    <a href="#dihybrid"><span class="n">PART 4</span><strong>Two-gene Punnett square</strong><span class="d">Build a 16-box Punnett square and find the 9 : 3 : 3 : 1 ratio.</span></a>
+    <a href="#family"><span class="n">PART 5</span><strong>Family traits</strong><span class="d">Look at your parents and siblings and work out who gave you which allele.</span></a>
+    <a href="#submit"><span class="n">PART 6</span><strong>Answer sheet</strong><span class="d">Your data and answers, compiled for you to copy into the course site.</span></a>
+  </div>
+  <div class="panel prose">
+    <h3>Before you start</h3>
+    <p>Plan on about 90 minutes. You can do this lab on your own. Part 5 is easier if you can see your parents or siblings, in person, on a video call, or in photos, but there is a practice family if you can't.</p>
+    <p class="note" style="margin:0">Your answers save in this browser automatically. If you switch computers or clear your browser data, they will not follow you, so finish on one device or copy your answer sheet often.</p>
+  </div>
+  <div class="foot-nav"><span></span><a href="#coins" class="nav-button primary">Start Part 1</a></div>
+</section>
+
+<!-- PART 1 -->
+<section class="view" id="v-coins" aria-labelledby="heading-coins" hidden>
+  <div class="prose lede">
+    <div class="eyebrow">Part 1 · Replaces Procedure 1</div>
+    <h2 id="heading-coins" tabindex="-1">Coins as gametes</h2>
+    <p>Suppose tall (<span class="mono">T</span>) is dominant to dwarf (<span class="mono">t</span>) in a plant. Cross two heterozygous plants: <span class="mono">Tt × Tt</span>. Each parent makes two kinds of gametes, <span class="mono">T</span> and <span class="mono">t</span>, in equal numbers, which is just like a coin landing heads or tails. Flipping two coins at once is like one gamete from each parent meeting at fertilization.</p>
+    <p>Heads = <span class="mono">T</span>, tails = <span class="mono">t</span>. The expected genotype ratio is <strong>1 TT : 2 Tt : 1 tt</strong>, so out of 64 offspring you expect 16 TT, 32 Tt, and 16 tt.</p>
+  </div>
+
+  <div class="panel stack">
+    <div class="row" style="justify-content:space-between">
+      <h3>Step A · Flip 64 times</h3>
+      <div class="seg" role="group" aria-label="Where your data comes from">
+        <button id="cmV" aria-pressed="true">Virtual coins</button>
+        <button id="cmR" aria-pressed="false">I flipped real coins</button>
+      </div>
+    </div>
+    <div id="coinVirtual" class="grid2">
+      <div class="stack">
+        <div class="coins" aria-hidden="true">
+          <div class="coinbox"><div class="coin" id="coin1">T</div>Gamete from parent 1</div>
+          <div class="coinbox"><div class="coin" id="coin2">T</div>Gamete from parent 2</div>
+        </div>
+        <p id="coinLast" class="mono" style="text-align:center;margin:0" aria-live="polite">Press Flip to make your first offspring.</p>
+        <div class="row" style="justify-content:center">
+          <button class="primary" id="flip1">Flip both coins</button>
+          <button id="flip10">Flip 10 times</button>
+          <button id="flipAll">Finish all 64</button>
+        </div>
+        <div class="meter" aria-hidden="true"><i id="flipMeter"></i></div>
+        <div class="row" style="justify-content:space-between"><span class="mono" id="flipCount">0 / 64 flips</span><button id="flipReset">Start over</button></div>
+        <div><div class="note" style="margin-bottom:4px">Most recent offspring</div><div class="chips" id="flipChips"></div></div>
+      </div>
+      <div class="tablewrap">
+        <table>
+          <caption class="note" style="text-align:left;caption-side:top;padding-bottom:6px">Table 1. Coin-flipping results (live)</caption>
+          <thead><tr><th scope="col">Result</th><th scope="col" class="num">Expected (1:2:1)</th><th scope="col" class="num">Observed</th></tr></thead>
+          <tbody id="coinTable"></tbody>
+        </table>
+      </div>
+    </div>
+    <div id="coinReal" hidden class="stack">
+      <p class="note" style="margin:0">Flip two coins together 64 times and tally the results, then enter your totals. They must add up to 64.</p>
+      <div class="row">
+        <label class="row" style="gap:6px">Heads–heads (TT) <input type="number" min="0" max="64" class="sm" id="realTT"></label>
+        <label class="row" style="gap:6px">Heads–tails (Tt) <input type="number" min="0" max="64" class="sm" id="realTt"></label>
+        <label class="row" style="gap:6px">Tails–tails (tt) <input type="number" min="0" max="64" class="sm" id="realtt"></label>
+      </div>
+      <div id="realMsg" class="note" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <div class="panel stack">
+    <h3>Step B · How a chi-square test works</h3>
+    <div class="prose">
+      <p>Your counts will almost never be exactly 16 : 32 : 16. The question is whether they are <em>close enough</em> that the difference could just be chance. Karl Pearson's <strong>chi-square (χ²) goodness-of-fit test</strong> answers that question. You compare what you <strong>observed (O)</strong> with what you <strong>expected (E)</strong>, and turn the difference into one number.</p>
+      <p>We always start by assuming the expected ratio is right and any differences are due to chance. That assumption is called the <strong>null hypothesis</strong>.</p>
+    </div>
+    <div class="formula" style="white-space:normal">χ² = Σ (O − E)² ÷ E <span class="muted">(Σ means "add up across all categories")</span></div>
+    <h4>Worked example: flipping one coin 10 times</h4>
+    <p class="prose" style="margin:0">You expect 5 heads and 5 tails. You get 7 heads and 3 tails. Is the coin unfair?</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th scope="col">Category</th><th scope="col" class="num">O</th><th scope="col" class="num">E</th><th scope="col" class="num">O − E</th><th scope="col" class="num">(O − E)²</th><th scope="col" class="num">(O − E)² ÷ E</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Heads</th><td class="num">7</td><td class="num">5</td><td class="num">2</td><td class="num">4</td><td class="num">0.8</td></tr>
+        <tr><th scope="row">Tails</th><td class="num">3</td><td class="num">5</td><td class="num">−2</td><td class="num">4</td><td class="num">0.8</td></tr>
+        <tr><td colspan="5"><strong>χ² (add the last column)</strong></td><td class="num"><strong>1.6</strong></td></tr>
+      </tbody>
+    </table></div>
+    <ol class="prose" style="margin:0;padding-left:22px">
+      <li><strong>Subtract</strong> expected from observed for each row (O − E). Negative numbers are fine.</li>
+      <li><strong>Square</strong> each difference. This makes every value positive, so the misses above and below don't cancel out.</li>
+      <li><strong>Divide</strong> by the expected number for that row. A miss of 2 matters more when you only expected 5 than when you expected 500.</li>
+      <li><strong>Add</strong> the last column to get χ² = 1.6.</li>
+      <li><strong>Find the degrees of freedom:</strong> df = number of categories − 1 = 2 − 1 = 1.</li>
+      <li><strong>Look up the critical value</strong> for df = 1 at the 0.05 level in the table: 3.841.</li>
+      <li><strong>Compare.</strong> 1.6 is <em>less</em> than 3.841, so the difference is small enough to be explained by chance. We have no evidence the coin is unfair, even though 7 : 3 looked lopsided.</li>
+    </ol>
+    <div class="grid2">
+      <div class="tablewrap">
+        <table class="critT">
+          <caption class="note" style="text-align:left;caption-side:top;padding-bottom:6px">Critical values of χ² at α = 0.05 (from Appendix D)</caption>
+          <thead><tr><th scope="col" class="num">df</th><th scope="col" class="num">1</th><th scope="col" class="num">2</th><th scope="col" class="num">3</th><th scope="col" class="num">4</th><th scope="col" class="num">5</th></tr></thead>
+          <tbody><tr><td class="num">χ²</td><td class="num">3.841</td><td class="num">5.991</td><td class="num">7.815</td><td class="num">9.488</td><td class="num">11.070</td></tr></tbody>
+        </table>
+      </div>
+      <div class="callout"><strong>Rule of thumb.</strong> If your χ² is <em>smaller</em> than the critical value, the data fit the expected ratio. If it is <em>equal or larger</em>, the difference is too big to blame on chance (there is less than a 5% chance of seeing a difference that big by luck alone).</div>
+    </div>
+  </div>
+
+  <div class="panel stack">
+    <h3>Step C · Your chi-square test</h3>
+    <p class="note" style="margin:0">Fill in each blank using your 64 flips. Press <strong>Check</strong> for feedback. If you get stuck, use <strong>Walk me through the first row</strong>.</p>
+    <div id="chi1" class="chi"></div>
+  </div>
+
+  <div class="panel stack">
+    <h3>Step D · What happens with more flips?</h3>
+    <div class="grid2">
+      <div class="stack">
+        <p class="prose" style="margin:0">Real geneticists count hundreds or thousands of offspring. Run 64,000 virtual flips and compare the percentages with yours. The black line marks the expected percentage.</p>
+        <div class="row"><button class="primary" id="bigRun">Run 64,000 flips</button><span id="bigChi" class="mono" aria-live="polite"></span></div>
+        <div class="bars" id="bigBars"></div><div id="bigAccessible" class="chart-data"></div>
+      </div>
+      <div class="stack">
+        <p class="prose" style="margin:0">Now imagine 30 classmates each flip fair coins 64 times and do the same chi-square test. Each dot is one classmate's χ². Dots to the right of the red line (5.991) would be called "significant."</p>
+        <div class="row"><button id="classRun">Simulate 30 classmates</button><span id="classMsg" class="mono" aria-live="polite"></span></div>
+        <div class="dotplot"><svg id="classSvg" viewBox="0 0 420 120" role="img" aria-label="Dot plot of 30 simulated chi-square values"></svg></div><div id="classAccessible" class="chart-data" aria-live="polite"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel qs">
+    <h3>Questions</h3>
+    <div class="q"><span class="qnum">Question 1.1</span><p>Did your 64 flips fit the expected 1 : 2 : 1 ratio? Give your χ² value and critical value, and explain what that comparison tells you.</p><textarea data-sa="q11"></textarea></div>
+    <div class="q"><span class="qnum">Question 1.2</span><p>Would you expect your results to be different if you flipped the coins 64,000 times instead of 64? Use the 64,000-flip simulation to explain why or why not.</p><textarea data-sa="q12"></textarea></div>
+    <div class="q"><span class="qnum">Question 1.3</span><p>In the classmate simulation, the coins were always fair, yet a few classmates may still have gotten a "significant" χ². About how many out of 30 did, and why does that happen?</p><textarea data-sa="q13"></textarea></div>
+  </div>
+  <div class="foot-nav"><a href="#overview" class="nav-button">← Overview</a><a href="#albinism" class="nav-button primary">Part 2 →</a></div>
+</section>
+
+<!-- PART 2 -->
+<section class="view" id="v-albinism" aria-labelledby="heading-albinism" hidden>
+  <div class="prose lede">
+    <div class="eyebrow">Part 2 · Replaces Procedure 2</div>
+    <h2 id="heading-albinism" tabindex="-1">Albinism in a family</h2>
+    <p><strong>Albinism</strong> is a condition in which the body makes little or no melanin, the pigment that colors skin, hair, and eyes. The most common forms are <strong>recessive</strong>: a person has albinism only if they inherit two non-working alleles (<span class="mono">aa</span>), one from each parent. People with one working allele (<span class="mono">Aa</span>) have typical pigmentation but are <strong>carriers</strong>. In humans, albinism affects about 1 in 17,000 to 20,000 people worldwide. It also shows up in wild animals, which rarely survive long, because they stand out to predators and often have poor eyesight. You'll come back to this idea in the evolution and ecology labs.</p>
+  </div>
+  <div class="grid2">
+    <div class="panel prose">
+      <h3>The problem</h3>
+      <p><strong>Jessica</strong> has typical pigmentation. Her mother, <strong>Jill</strong>, has albinism. Jessica and her partner <strong>Tom</strong>, who also has albinism, are planning a family.</p>
+      <p>What genotypes and phenotypes could their children have, and in what ratios?</p>
+      <p class="note">Use <span class="mono">A</span> for the allele for typical pigmentation and <span class="mono">a</span> for the albinism allele. Work through the steps in order. Each one gives you feedback.</p>
+    </div>
+    <figure class="panel ped" style="margin:0">
+      <svg viewBox="0 0 440 250" role="img" aria-label="Family tree. Jill, who has albinism, is Jessica's mother. Jessica has typical pigmentation and has a partner, Tom, who has albinism. Their future children are unknown.">
+        <line class="ln" x1="104" y1="40" x2="196" y2="40"/>
+        <line class="ln" x1="150" y1="40" x2="150" y2="100"/>
+        <circle class="sh fill" cx="84" cy="40" r="20"/>
+        <rect class="sh" x="196" y="20" width="40" height="40"/>
+        <text class="q" x="216" y="40">?</text>
+        <text class="t" x="84" y="78">Jill</text>
+        <text class="t" x="216" y="78">Jessica's father</text>
+        <line class="ln" x1="170" y1="120" x2="270" y2="120"/>
+        <circle class="sh" cx="150" cy="120" r="20"/>
+        <rect class="sh fill" x="270" y="100" width="40" height="40"/>
+        <text class="t" x="150" y="158">Jessica</text>
+        <text class="t" x="290" y="158">Tom</text>
+        <line class="ln" x1="220" y1="120" x2="220" y2="185"/>
+        <polygon class="sh" points="220,185 240,205 220,225 200,205"/>
+        <text class="q" x="220" y="205">?</text>
+        <text class="t" x="290" y="210" style="text-anchor:start">Future child</text>
+        <rect class="sh fill" x="16" y="226" width="12" height="12"/><text class="t" x="34" y="236" style="text-anchor:start;font-size:12px">has albinism</text>
+        <rect class="sh" x="124" y="226" width="12" height="12"/><text class="t" x="142" y="236" style="text-anchor:start;font-size:12px">typical pigmentation</text>
+      </svg>
+    </figure>
+  </div>
+  <div class="panel stack" id="albSteps"></div>
+  <div class="panel qs">
+    <h3>Question</h3>
+    <div class="q"><span class="qnum">Question 2.1</span><p>Explain how you figured out Jessica's genotype without testing her DNA. What single piece of family information made it possible?</p><textarea data-sa="q21"></textarea></div>
+  </div>
+  <div class="foot-nav"><a href="#coins" class="nav-button">← Part 1</a><a href="#mono" class="nav-button primary">Part 3 →</a></div>
+</section>
+
+<!-- PART 3 -->
+<section class="view" id="v-mono" aria-labelledby="heading-mono" hidden>
+  <div class="prose lede">
+    <div class="eyebrow">Part 3 · Replaces Procedure 3</div>
+    <h2 id="heading-mono" tabindex="-1">Mystery peas: who were the parents?</h2>
+    <p>In peas, <strong>yellow</strong> seed color (<span class="mono">Y</span>) is dominant to <strong>green</strong> (<span class="mono">y</span>). Below is a tray of 96 seeds, all from one cross between two pea plants. Nobody wrote down what the parent plants were. Your job is to work backward from the offspring to the parents, then test your answer with chi-square.</p>
+  </div>
+  <div class="panel stack">
+    <div class="row" style="justify-content:space-between">
+      <h3>Step 1 · Count the seeds</h3>
+      <label class="row note" style="gap:6px"><input type="checkbox" id="peaLabels"> Show color letters (Y / G)</label>
+    </div>
+    <p class="note" style="margin:0">Tip: count one row at a time. Click or tap a seed (or press Enter or Space on it) to mark it as counted. The marks don't count anything for you; they just keep you from losing your place.</p>
+    <div class="row"><label><input type="checkbox" id="seedTableMode"> Use an accessible text grid instead of the illustrated seed tray</label></div>
+    <div class="tray" id="illustratedTray"><svg id="traySvg" viewBox="0 0 600 410" role="group" aria-label="Interactive tray of 96 seeds in eight rows of twelve; use Tab and arrow keys to navigate, Enter or Space to mark seeds"></svg></div>
+    <div id="seedTextGrid" hidden class="tablewrap" aria-label="Text-based seed tray"></div>
+    <div class="row">
+      <label class="row" style="gap:6px">Yellow seeds <input type="number" min="0" max="96" class="sm" id="cntY"></label>
+      <label class="row" style="gap:6px">Green seeds <input type="number" min="0" max="96" class="sm" id="cntG"></label>
+      <button class="primary" id="cntCheck">Check my count</button>
+      <button id="cntClear">Clear marks</button>
+      <button id="cntReveal" hidden>Show me the counts</button>
+    </div>
+    <div id="cntFb" class="fbs" aria-live="polite"></div>
+  </div>
+  <div class="panel stack" id="monoSteps"></div>
+  <div class="panel stack">
+    <h3>Step 5 · Test your answer with chi-square</h3>
+    <p class="note" style="margin:0">Your observed numbers are your seed counts. Your expected numbers come from Step 4.</p>
+    <div id="chi2" class="chi"></div>
+  </div>
+  <div class="panel qs">
+    <h3>Questions</h3>
+    <div class="q"><span class="qnum">Question 3.1</span><p>Which cross produced your seeds? Explain how the ratio of yellow to green seeds told you, and why another cross would not fit.</p><textarea data-sa="q31"></textarea></div>
+    <div class="q"><span class="qnum">Question 3.2</span><p>What did your chi-square test tell you? Give your χ² value, your degrees of freedom, and the critical value you compared it to.</p><textarea data-sa="q32"></textarea></div>
+  </div>
+  <div class="foot-nav"><a href="#albinism" class="nav-button">← Part 2</a><a href="#dihybrid" class="nav-button primary">Part 4 →</a></div>
+</section>
+
+<!-- PART 4 -->
+<section class="view" id="v-dihybrid" aria-labelledby="heading-dihybrid" hidden>
+  <div class="prose lede">
+    <div class="eyebrow">Part 4 · Replaces Procedure 4</div>
+    <h2 id="heading-dihybrid" tabindex="-1">A two-gene (dihybrid) Punnett square</h2>
+    <p>Now follow two genes at once. In peas, yellow seeds (<span class="mono">Y</span>) are dominant to green (<span class="mono">y</span>), and round seeds (<span class="mono">R</span>) are dominant to wrinkled (<span class="mono">r</span>). Mendel crossed two plants that were heterozygous for both genes: <strong class="mono">YyRr × YyRr</strong>.</p>
+    <p>Mendel's <strong>Law of Independent Assortment</strong> says the alleles of different genes separate into gametes independently of each other (as long as the genes are on different chromosomes). Getting <span class="mono">Y</span> tells you nothing about whether a gamete also gets <span class="mono">R</span> or <span class="mono">r</span>.</p>
+  </div>
+  <div class="panel stack" id="diSteps"></div>
+  <div class="panel qs">
+    <h3>Questions</h3>
+    <div class="q"><span class="qnum">Question 4.1</span><p>How does your Punnett square show independent assortment? Point to one thing in the square that would look different if <span class="mono">Y</span> and <span class="mono">R</span> were always inherited together.</p><textarea data-sa="q41"></textarea></div>
+    <div class="q"><span class="qnum">Question 4.2</span><p>Hybrid seed, such as most sweet corn, is made by crossing two <strong>pure-breeding</strong> (homozygous) parent lines, and farmers have to buy new seed every year. Based on what you have learned about genetics, why is hybrid seed expensive to produce? And why won't seeds saved from a hybrid crop grow into plants just like their parents?</p><textarea data-sa="q42"></textarea></div>
+  </div>
+  <div class="foot-nav"><a href="#mono" class="nav-button">← Part 3</a><a href="#family" class="nav-button primary">Part 5 →</a></div>
+</section>
+
+<!-- PART 5 -->
+<section class="view" id="v-family" aria-labelledby="heading-family" hidden>
+  <div class="prose lede">
+    <div class="eyebrow">Part 5 · Replaces Procedure 5</div>
+    <h2 id="heading-family" tabindex="-1">Your family's traits</h2>
+    <p>Here you'll trace a few easy-to-see traits through your family and try to work out which allele you got from which parent.</p>
+  </div>
+  <div class="panel prose" style="max-width:none">
+    <h3 style="margin-bottom:8px">An honest note about human traits</h3>
+    <div class="prose">
+      <p>Most human traits are <strong>not</strong> controlled by one gene with a dominant and a recessive allele. Earlobe shape, for example, is influenced by dozens of genes. In this part we will <em>treat</em> each trait as if it were a simple one-gene trait, because that is a useful model for practicing Mendelian logic. Each trait has a "Reality check" that tells you how well the model fits.</p>
+      <p>If your family doesn't fit the model, that is a real result, and it's evidence the trait isn't a simple one-gene trait. <strong>It tells you nothing about who is related to whom.</strong></p>
+    </div>
+  </div>
+  <div class="panel stack">
+    <h3>Choose a family</h3>
+    <div class="seg" role="group" aria-label="Family to use">
+      <button id="famMine" aria-pressed="true">My family</button>
+      <button id="famPractice" aria-pressed="false">Practice family</button>
+    </div>
+    <p class="note" id="famModeNote" style="margin:0"></p>
+    <div class="row" id="sibRow">
+      <label for="sibN">Full siblings (same two parents) to include</label>
+      <select id="sibN"><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option></select>
+    </div>
+    <p class="note" style="margin:0">For each person, pick the trait they show. Choose "Don't know" for anyone you can't check. You need to fill in at least yourself.</p>
+  </div>
+  <div id="traits" class="stack" style="gap:22px"></div>
+  <div class="panel qs">
+    <h3>Questions</h3>
+    <div class="q"><span class="qnum">Question 5.1</span><p>Is it possible to know the genotype of a person who shows the dominant phenotype? Use at least one trait from your family as an example, and explain what extra information helped (or would have helped).</p><textarea data-sa="q51"></textarea></div>
+    <div class="q"><span class="qnum">Question 5.2</span><p>Are dominant traits always more common in a population than recessive ones? Use the earwax Reality check, or another example you know, to support your answer.</p><textarea data-sa="q52"></textarea></div>
+    <div class="q"><span class="qnum">Question 5.3</span><p>Did any of your family's traits <em>not</em> fit the simple one-gene model, or come out "can't tell"? What does that suggest about how these traits are really inherited?</p><textarea data-sa="q53"></textarea></div>
+  </div>
+  <div class="foot-nav"><a href="#dihybrid" class="nav-button">← Part 4</a><a href="#submit" class="nav-button primary">Answer sheet →</a></div>
+</section>
+
+<!-- SUBMIT -->
+<section class="view" id="v-submit" aria-labelledby="heading-submit" hidden>
+  <div class="prose lede">
+    <div class="eyebrow">Part 6</div>
+    <h2 id="heading-submit" tabindex="-1">Answer sheet</h2>
+    <p>Everything you entered is compiled below. Check that it is complete, then copy it and paste it into the assignment on the course site.</p>
+  </div>
+  <div class="panel stack">
+    <div id="missing" class="note"></div>
+    <div class="row"><button class="primary" id="copyBtn">Copy answer sheet</button><span id="copyMsg" class="note" aria-live="polite"></span></div>
+    <textarea id="sheet" readonly aria-label="Compiled answer sheet"></textarea>
+  </div>
+  <div class="foot-nav"><a href="#family" class="nav-button">← Part 5</a><span></span></div>
+</section>
+
+</div></main>
+
+<script>
+(function(){
+"use strict";
+const KEY="lab14-genetics-v1";
+let S={};
+try{S=JSON.parse(localStorage.getItem(KEY)||"{}")||{}}catch(e){S={}}
+S.sa=S.sa||{}; S.mc=S.mc||{}; S.fill=S.fill||{}; S.chk=S.chk||{}; S.chi=S.chi||{};
+S.coins=S.coins||{mode:"virtual",flips:[],real:{TT:"",Tt:"",tt:""}};
+S.mono=S.mono||{marks:[],cY:"",cG:"",tries:0};
+S.di=S.di||{gam:["","","",""],cells:Array(16).fill(""),paint:Array(16).fill(-1),fr:{}};
+S.fam=S.fam||{mode:"mine",nSib:0,mine:{},ans:{}};
+if(!S.seed){S.seed=Math.floor(Math.random()*1e9)+1}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+const $=id=>document.getElementById(id);
+let chi1=null,chi2=null,paintSel=0;
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const reduce=()=>window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const fmt=(x,d=3)=>(Math.round(x*Math.pow(10,d))/Math.pow(10,d)).toString();
+const num=v=>{if(v===null||v===undefined)return NaN;const s=String(v).trim().replace(/−/g,"-");if(s==="")return NaN;return Number(s)};
+const near=(a,b,t)=>Math.abs(a-b)<=t;
+function fbHTML(list){return list.map(f=>`<div class="fb ${f[0]}"><strong>${f[0]==="good"?"Correct: ":f[0]==="bad"?"Check: ":"Hint: "}</strong>${f[1]}</div>`).join("")}
+
+/* ---------- names & short answers ---------- */
+$("stuName").value=S.name||""; $("stuPartners").value=S.partners||"";
+$("stuName").addEventListener("input",e=>{S.name=e.target.value;save()});
+$("stuPartners").addEventListener("input",e=>{S.partners=e.target.value;save()});
+document.querySelectorAll("textarea[data-sa]").forEach(t=>{
+  t.id="sa-"+t.dataset.sa;
+  const lab=t.parentElement.querySelector(".qnum"); if(lab){lab.id="lbl-"+t.dataset.sa;const question=lab.parentElement.querySelector("p");if(question){question.id="prompt-"+t.dataset.sa;t.setAttribute("aria-labelledby",lab.id+" "+question.id)}else t.setAttribute("aria-labelledby",lab.id)}
+  t.value=S.sa[t.dataset.sa]||"";
+  t.addEventListener("input",()=>{S.sa[t.dataset.sa]=t.value;save()});
+});
+
+/* ---------- routing ---------- */
+const VIEWS=["overview","coins","albinism","mono","dihybrid","family","submit"];
+let routeInitialized=false;
+function route(){
+  let v=(location.hash||"").replace("#","");
+  if(!VIEWS.includes(v)) v="overview";
+  VIEWS.forEach(x=>{$("v-"+x).hidden=(x!==v)});
+  document.querySelectorAll("#navlinks a").forEach(a=>{
+    if(a.dataset.v===v){a.setAttribute("aria-current","page");a.scrollIntoView({block:"nearest",inline:"nearest"})}
+    else a.removeAttribute("aria-current");
+  });
+  if(v==="coins"){renderCoins();chi1.render()}
+  if(v==="mono"){chi2.render()}
+  if(v==="submit") renderSheet();
+  window.scrollTo(0,0);
+  if(routeInitialized){const heading=$("heading-"+v);if(heading)heading.focus({preventScroll:true});else $("main-content").focus({preventScroll:true})}
+  routeInitialized=true;
+}
+window.addEventListener("hashchange",route);
+
+/* =====================================================
+   Generic helpers: fill-in question & multiple choice
+   ===================================================== */
+function fillQ(host,o){
+  // o: {id,label,prompt,placeholder,check:(v)=>[cls,msg], width}
+  const d=document.createElement("div"); d.className="step";
+  d.innerHTML=`<span class="lab">${o.label}</span><p id="prompt-${o.id}">${o.prompt}</p>
+   <div class="row"><input type="text" class="${o.cls||"sm"}" id="f-${o.id}" placeholder="${o.placeholder||""}" aria-labelledby="prompt-${o.id}" autocomplete="off" spellcheck="false">
+   <button id="fb-${o.id}">Check</button></div><div id="ff-${o.id}" aria-live="polite"></div>`;
+  host.appendChild(d);
+  const inp=$("f-"+o.id); inp.value=S.fill[o.id]||"";
+  inp.addEventListener("input",()=>{S.fill[o.id]=inp.value;inp.classList.remove("ok","no");save()});
+  const run=()=>{const r=o.check(inp.value.trim());$("ff-"+o.id).innerHTML=fbHTML([r]);
+    inp.classList.toggle("ok",r[0]==="good");inp.classList.toggle("no",r[0]==="bad");S.chk[o.id]=r[0]==="good";save();if(o.after)o.after()};
+  $("fb-"+o.id).addEventListener("click",run);
+  inp.addEventListener("keydown",e=>{if(e.key==="Enter")run()});
+  if(S.chk[o.id]!==undefined && inp.value) run();
+}
+function mcQ(host,o){
+  // o:{id,label,prompt,options:[{t,ok,fb}]}
+  const d=document.createElement("div"); d.className="step";
+  d.innerHTML=`<span class="lab">${o.label}</span><p id="mp-${o.id}">${o.prompt}</p>
+   <div class="opts" role="radiogroup" aria-labelledby="mp-${o.id}">${o.options.map((op,i)=>`<label><input type="radio" name="mc-${o.id}" value="${i}"><span>${op.t}</span></label>`).join("")}</div>
+   <div id="mf-${o.id}" aria-live="polite"></div>`;
+  host.appendChild(d);
+  const show=i=>{const op=o.options[i]; if(!op) return;
+    $("mf-"+o.id).innerHTML=fbHTML([[op.ok?"good":"bad",(op.ok?"Correct. ":"Not quite. ")+op.fb]]); S.chk[o.id]=!!op.ok};
+  d.querySelectorAll("input").forEach(r=>{
+    if(S.mc[o.id]===+r.value){r.checked=true}
+    r.addEventListener("change",()=>{S.mc[o.id]=+r.value;show(+r.value);save();if(o.after)o.after()});
+  });
+  if(S.mc[o.id]!==undefined) show(S.mc[o.id]);
+}
+// genotype normalizer for one gene: returns canonical like "Aa" or null
+function normG(v,L){
+  const s=v.replace(/[\s,]/g,""); if(s.length!==2) return null;
+  const up=L.toUpperCase(),lo=L.toLowerCase();
+  if(![...s].every(c=>c===up||c===lo)) return null;
+  return [...s].sort((a,b)=>(a===up?0:1)-(b===up?0:1)).join("");
+}
+
+/* =====================================================
+   Chi-square guided widget
+   ===================================================== */
+const CRIT={1:3.841,2:5.991,3:7.815,4:9.488,5:11.070};
+function makeChi(id,hostId,getRows,unreadyMsg){
+  const host=$(hostId);
+  S.chi[id]=S.chi[id]||{v:{},dec:null};
+  const st=S.chi[id];
+  function render(){
+    const rows=getRows();
+    if(!rows){host.innerHTML=`<p class="fb hint" style="margin:0">${unreadyMsg}</p>`;return}
+    let h=`<div class="tablewrap"><table><thead><tr><th scope="col">Category</th><th scope="col" class="num">O</th><th scope="col" class="num">E</th><th scope="col" class="num">O − E</th><th scope="col" class="num">(O − E)²</th><th scope="col" class="num">(O − E)² ÷ E</th></tr></thead><tbody>`;
+    rows.forEach((r,i)=>{
+      h+=`<tr><td>${r.label}</td><td class="num">${r.O}</td><td class="num">${r.E}</td>`;
+      ["d","s","t"].forEach(c=>{const k=c+i;h+=`<td class="num"><input type="text" inputmode="decimal" class="xs" data-k="${k}" aria-label="${["O minus E","O minus E squared","O minus E squared divided by E"][["d","s","t"].indexOf(c)]} for ${esc(r.label.replace(/<[^>]+>/g,""))}" value="${esc(st.v[k]||"")}"></td>`});
+      h+=`</tr>`;
+    });
+    h+=`</tbody></table></div>
+    <div class="row" style="gap:14px">
+      <label class="row" style="gap:6px">χ² = <input type="text" inputmode="decimal" class="xs" data-k="chi" value="${esc(st.v.chi||"")}"></label>
+      <label class="row" style="gap:6px">df = <input type="text" inputmode="numeric" class="xs" data-k="df" value="${esc(st.v.df||"")}"></label>
+      <label class="row" style="gap:6px">Critical value = <input type="text" inputmode="decimal" class="xs" data-k="crit" value="${esc(st.v.crit||"")}"></label>
+    </div>
+    <div class="opts" role="radiogroup" aria-label="Conclusion">
+      <label><input type="radio" name="dec-${id}" value="fit" ${st.dec==="fit"?"checked":""}><span>χ² is <strong>less than</strong> the critical value. The difference is small enough to be due to chance, so the data <strong>fit</strong> the expected ratio.</span></label>
+      <label><input type="radio" name="dec-${id}" value="nofit" ${st.dec==="nofit"?"checked":""}><span>χ² is <strong>equal to or greater than</strong> the critical value. The difference is too large to be due to chance, so the data <strong>do not fit</strong> the expected ratio.</span></label>
+    </div>
+    <div class="row"><button class="primary" data-act="check">Check</button><button data-act="walk">Walk me through the first row</button></div>
+    <div class="fbs" data-fb aria-live="polite"></div>`;
+    host.innerHTML=h;
+    host.querySelectorAll("input[data-k]").forEach(inp=>inp.addEventListener("input",()=>{st.v[inp.dataset.k]=inp.value;inp.classList.remove("ok","no");save()}));
+    host.querySelectorAll(`input[name="dec-${id}"]`).forEach(r=>r.addEventListener("change",()=>{st.dec=r.value;save()}));
+    host.querySelector('[data-act="check"]').addEventListener("click",()=>check(rows));
+    host.querySelector('[data-act="walk"]').addEventListener("click",()=>walk(rows));
+    if(st.checked) check(rows,true);
+  }
+  function walk(rows){
+    const r=rows[0],d=r.O-r.E,s=d*d,t=s/r.E;
+    host.querySelector("[data-fb]").innerHTML=fbHTML([["hint",
+      `<strong>Row 1, ${r.label}:</strong><br>
+      1. O − E = ${r.O} − ${r.E} = <strong>${fmt(d)}</strong><br>
+      2. (O − E)² = ${fmt(d)} × ${fmt(d)} = <strong>${fmt(s)}</strong><br>
+      3. (O − E)² ÷ E = ${fmt(s)} ÷ ${r.E} = <strong>${fmt(t)}</strong><br>
+      Now do the same for the other row${rows.length>2?"s":""}, then add up the last column to get χ².`]]);
+  }
+  function check(rows,quiet){
+    const out=[]; let allRows=true; let sumStudent=0, sumTrue=0;
+    const mark=(k,ok)=>{const el=host.querySelector(`[data-k="${k}"]`);if(el){el.classList.toggle("ok",ok);el.classList.toggle("no",!ok)}};
+    rows.forEach((r,i)=>{
+      const d=r.O-r.E,s=d*d,t=s/r.E; sumTrue+=t;
+      const vd=num(st.v["d"+i]),vs=num(st.v["s"+i]),vt=num(st.v["t"+i]);
+      const nm=r.label.replace(/<[^>]+>/g,"");
+      if(isNaN(vd)||isNaN(vs)||isNaN(vt)){allRows=false;out.push(["bad",`${nm}: fill in all three boxes.`]);["d","s","t"].forEach(c=>{if(isNaN(num(st.v[c+i])))mark(c+i,false)});return}
+      if(near(vd,d,0.011)) mark("d"+i,true);
+      else if(near(vd,-d,0.011)){mark("d"+i,true);out.push(["hint",`${nm}: you subtracted in reverse (E − O). Use O − E to keep the habit. It won't change χ², because squaring removes the sign.`])}
+      else {mark("d"+i,false);allRows=false;out.push(["bad",`${nm}: check O − E. Take the observed number and subtract the expected number.`])}
+      if(near(vs,s,Math.max(0.011,s*0.01))) mark("s"+i,true);
+      else{mark("s"+i,false);allRows=false;
+        if(near(vs,Math.abs(d),0.011)) out.push(["bad",`${nm}: you still need to square O − E (multiply it by itself).`]);
+        else if(near(vs,2*Math.abs(d),0.011)&&d!==2&&d!==-2) out.push(["bad",`${nm}: squaring means multiplying a number by itself, not by 2.`]);
+        else if(near(vs,-s,0.011)) out.push(["bad",`${nm}: a negative number times itself is positive.`]);
+        else out.push(["bad",`${nm}: check (O − E)². Multiply your O − E value by itself.`]);}
+      if(near(vt,t,Math.max(0.021,t*0.02))) {mark("t"+i,true)}
+      else{mark("t"+i,false);allRows=false;
+        if(r.O&&near(vt,s/r.O,0.021)) out.push(["bad",`${nm}: divide by the <em>expected</em> number (E), not the observed.`]);
+        else out.push(["bad",`${nm}: check the last column. Divide (O − E)² by E (${r.E}).`]);}
+      sumStudent+=isNaN(vt)?0:vt;
+    });
+    const vc=num(st.v.chi), vdf=num(st.v.df), vcr=num(st.v.crit), k=rows.length, df=k-1, crit=CRIT[df];
+    if(isNaN(vc)){mark("chi",false);out.push(["bad","Enter your χ² value: the sum of the last column."])}
+    else if(near(vc,sumTrue,Math.max(0.03,sumTrue*0.02))||(allRows&&near(vc,sumStudent,0.03))) mark("chi",true);
+    else{mark("chi",false);out.push(["bad",`χ² should be the sum of the (O − E)² ÷ E column. ${allRows?`Your column adds up to about ${fmt(sumStudent,2)}.`:"Fix the rows above first."}`])}
+    if(isNaN(vdf)){mark("df",false);out.push(["bad","Enter the degrees of freedom."])}
+    else if(vdf===df) mark("df",true);
+    else{mark("df",false);out.push(["bad",vdf===k?`df is the number of categories <em>minus 1</em>. You have ${k} categories.`:`df = number of categories − 1. Count the rows in your table.`])}
+    if(isNaN(vcr)){mark("crit",false);out.push(["bad","Look up the critical value in the table for your df."])}
+    else if(near(vcr,crit,0.002)) mark("crit",true);
+    else{mark("crit",false);const other=Object.keys(CRIT).find(x=>near(CRIT[x],vcr,0.002));
+      out.push(["bad",other?`${vcr} is the critical value for df = ${other}. Use the column for df = ${df}.`:`Find df = ${df} in the critical value table (α = 0.05).`])}
+    const chiUse=isNaN(vc)?sumTrue:vc, fits=sumTrue<crit;
+    if(!st.dec) out.push(["bad","Choose a conclusion."]);
+    else if((st.dec==="fit")===fits) out.push(["good",fits?`Correct conclusion: χ² (${fmt(sumTrue,2)}) is less than ${crit}, so the difference between your data and the expected ratio can be explained by chance.`:`Correct conclusion: χ² (${fmt(sumTrue,2)}) is at least ${crit}, so the difference is larger than chance alone usually produces.`]);
+    else out.push(["bad",`Compare the two numbers again: is ${fmt(chiUse,2)} smaller or larger than ${crit}?`]);
+    const allGood=!out.some(o=>o[0]==="bad");
+    if(allGood) out.unshift(["good","Every value checks out. Nice work."]);
+    st.checked=true; st.ok=allGood; st.result={chi:sumTrue,df,crit,fits}; save();
+    host.querySelector("[data-fb]").innerHTML=fbHTML(out);
+  }
+  return {render,state:st};
+}
+
+/* =====================================================
+   PART 1 — coins
+   ===================================================== */
+const CAT=[{k:2,lab:"Heads–heads (TT)",E:16},{k:1,lab:"Heads–tails (Tt)",E:32},{k:0,lab:"Tails–tails (tt)",E:16}];
+function coinCounts(){
+  const c={2:0,1:0,0:0}; let n=0;
+  if(S.coins.mode==="real"){const r=S.coins.real;c[2]=parseInt(r.TT)||0;c[1]=parseInt(r.Tt)||0;c[0]=parseInt(r.tt)||0;n=c[2]+c[1]+c[0]}
+  else{S.coins.flips.forEach(f=>{c[f]++});n=S.coins.flips.length}
+  return {c,n};
+}
+function setMode(m){S.coins.mode=m;save();$("cmV").setAttribute("aria-pressed",m==="virtual");$("cmR").setAttribute("aria-pressed",m==="real");
+  $("coinVirtual").hidden=m!=="virtual";$("coinReal").hidden=m!=="real";renderCoins();if(chi1)chi1.render()}
+$("cmV").addEventListener("click",()=>setMode("virtual"));
+$("cmR").addEventListener("click",()=>setMode("real"));
+["TT","Tt","tt"].forEach(k=>{const el=$("real"+k);el.value=S.coins.real[k];el.addEventListener("input",()=>{S.coins.real[k]=el.value;save();renderCoins();if(chi1)chi1.render()})});
+function flipOne(){const a=Math.random()<.5?1:0,b=Math.random()<.5?1:0;return [a,b]}
+function setCoin(el,h){el.textContent=h?"T":"t";el.classList.toggle("tails",!h)}
+function doFlips(n){
+  const left=64-S.coins.flips.length; n=Math.min(n,left); if(n<=0) return;
+  let last;
+  for(let i=0;i<n;i++){last=flipOne();S.coins.flips.push(last[0]+last[1])}
+  S.coins.lastPair=last; save();
+  const c1=$("coin1"),c2=$("coin2");
+  if(!reduce()){[c1,c2].forEach(c=>{c.classList.remove("flip");void c.offsetWidth;c.classList.add("flip")});
+    setTimeout(()=>{setCoin(c1,last[0]);setCoin(c2,last[1])},270)}
+  else{setCoin(c1,last[0]);setCoin(c2,last[1])}
+  const g=["tt","Tt","TT"][last[0]+last[1]];
+  $("coinLast").textContent=(n>1?`${n} flips done. Last offspring: `:"Offspring: ")+g+(g==="tt"?" (dwarf)":" (tall)");
+  renderCoins(); if(chi1)chi1.render();
+}
+$("flip1").addEventListener("click",()=>doFlips(1));
+$("flip10").addEventListener("click",()=>doFlips(10));
+$("flipAll").addEventListener("click",()=>doFlips(64));
+let resetArm=false;
+$("flipReset").addEventListener("click",()=>{
+  if(!resetArm){resetArm=true;$("flipReset").textContent="Tap again to erase all flips";setTimeout(()=>{resetArm=false;$("flipReset").textContent="Start over"},3000);return}
+  resetArm=false;$("flipReset").textContent="Start over";S.coins.flips=[];S.coins.lastPair=null;
+  const st=chi1.state;st.v={};st.dec=null;st.checked=false;delete st.result;delete st.ok;save();$("coinLast").textContent="Press Flip to make your first offspring.";renderCoins();chi1.render()});
+function renderCoins(){
+  const {c,n}=coinCounts();
+  $("coinTable").innerHTML=CAT.map(r=>`<tr><td>${r.lab}</td><td class="num">${r.E}</td><td class="num">${(S.coins.mode==="real"||n)?c[r.k]:"—"}</td></tr>`).join("")+`<tr><td><strong>Total</strong></td><td class="num">64</td><td class="num">${n}</td></tr>`;
+  const done=S.coins.flips.length;
+  $("flipCount").textContent=`${done} / 64 flips`; $("flipMeter").style.width=(done/64*100)+"%";
+  ["flip1","flip10","flipAll"].forEach(b=>$(b).disabled=done>=64);
+  $("flipChips").innerHTML=S.coins.flips.slice(-16).map(f=>`<span class="chip">${["tt","Tt","TT"][f]}</span>`).join("");
+  if(S.coins.lastPair){setCoin($("coin1"),S.coins.lastPair[0]);setCoin($("coin2"),S.coins.lastPair[1])}
+  if(S.coins.mode==="real"){$("realMsg").textContent=n===64?"Your totals add up to 64.":`Your totals add up to ${n}. They need to add up to 64.`}
+}
+chi1=makeChi("c1","chi1",()=>{const {c,n}=coinCounts(); if(n!==64) return null;
+  return CAT.map(r=>({label:r.lab,O:c[r.k],E:r.E}))},"Finish all 64 flips (or enter real-coin totals that add up to 64) to unlock your chi-square table.");
+
+// Big run
+function chiOf(c,E){return c.reduce((s,o,i)=>s+(o-E[i])**2/E[i],0)}
+$("bigRun").addEventListener("click",()=>{
+  const N=64000,c=[0,0,0];
+  for(let i=0;i<N;i++){const s=(Math.random()<.5?1:0)+(Math.random()<.5?1:0);c[2-s]++}
+  S.big={c};save();renderBig();
+});
+function renderBig(){
+  if(!S.big){$("bigBars").innerHTML="";$("bigAccessible").innerHTML="";return}
+  const c=S.big.c,N=64000,mine=coinCounts();
+  const exp=[25,50,25],labs=["TT","Tt","tt"];
+  let h=`<div class="note">64,000 flips</div>`;
+  c.forEach((v,i)=>{const p=v/N*100;h+=`<div class="br"><span class="mono">${labs[i]}</span><span class="track"><span class="fill" style="width:${p}%"></span><span class="exp" style="left:${exp[i]}%"></span></span><span class="mono">${p.toFixed(1)}%</span></div>`});
+  if(mine.n===64){const mc=[mine.c[2],mine.c[1],mine.c[0]];h+=`<div class="note" style="margin-top:6px">Your 64 flips</div>`;
+    mc.forEach((v,i)=>{const p=v/64*100;h+=`<div class="br"><span class="mono">${labs[i]}</span><span class="track"><span class="fill" style="width:${p}%;opacity:.6"></span><span class="exp" style="left:${exp[i]}%"></span></span><span class="mono">${p.toFixed(1)}%</span></div>`})}
+  $("bigBars").innerHTML=h;
+  const tableRows=c.map((v,i)=>`<tr><th scope="row">${labs[i]}</th><td>${exp[i]}%</td><td>${v}</td><td>${(v/N*100).toFixed(1)}%</td></tr>`).join("");
+  $("bigAccessible").innerHTML=`<table><caption>64,000-flip simulation, numerical results</caption><thead><tr><th scope="col">Genotype</th><th scope="col">Expected</th><th scope="col">Count</th><th scope="col">Observed</th></tr></thead><tbody>${tableRows}</tbody></table>`;
+  $("bigChi").textContent=`TT ${c[0].toLocaleString()} · Tt ${c[1].toLocaleString()} · tt ${c[2].toLocaleString()}`;
+}
+$("classRun").addEventListener("click",()=>{
+  const vals=[];
+  for(let k=0;k<30;k++){const c=[0,0,0];for(let i=0;i<64;i++){const s=(Math.random()<.5?1:0)+(Math.random()<.5?1:0);c[2-s]++}vals.push(chiOf(c,[16,32,16]))}
+  S.cls=vals;save();renderClass();
+});
+function renderClass(){
+  const svg=$("classSvg"); if(!S.cls){svg.innerHTML=`<text x="210" y="60" text-anchor="middle">Press the button to run the simulation</text>`;$("classAccessible").textContent="No classmate simulation has been run yet.";return}
+  const max=Math.max(12,Math.ceil(Math.max(...S.cls)));const X=v=>20+v/max*380;
+  let h=`<line class="ax" x1="20" y1="90" x2="400" y2="90"/>`;
+  for(let t=0;t<=max;t+=2)h+=`<line class="ax" x1="${X(t)}" y1="90" x2="${X(t)}" y2="94"/><text x="${X(t)}" y="108" text-anchor="middle">${t}</text>`;
+  h+=`<line class="crit" x1="${X(5.991)}" y1="8" x2="${X(5.991)}" y2="90"/>`;
+  const bins={};S.cls.forEach(v=>{const b=Math.round(v/ (max/38));bins[b]=(bins[b]||0)+1;const y=84-(bins[b]-1)*9;h+=`<circle class="d ${v>=5.991?"hi":""}" cx="${X(v)}" cy="${y}" r="4"/>`});
+  svg.innerHTML=h;
+  const hi=S.cls.filter(v=>v>=5.991).length;
+  $("classAccessible").textContent=`Numeric alternative to the dot plot: ${hi} of 30 simulated classmates reached or exceeded χ² = 5.991. Chi-square values: ${S.cls.map(v=>v.toFixed(2)).join(", ")}.`;
+  $("classMsg").textContent=`${hi} of 30 were "significant"`;
+  svg.setAttribute("aria-label",`Dot plot of 30 simulated chi-square values. ${hi} of 30 are at or above the critical value 5.991.`);
+}
+
+/* =====================================================
+   PART 2 — albinism
+   ===================================================== */
+(function(){
+  const host=$("albSteps");
+  host.insertAdjacentHTML("beforeend",`<h3>Work it out step by step</h3>`);
+  fillQ(host,{id:"aTom",label:"Step 1",prompt:"What is Tom's genotype?",placeholder:"e.g. Aa",check:v=>{const g=normG(v,"a");
+    if(!g) return ["bad","Use two letters: A and/or a."];
+    if(g==="aa") return ["good","Right. Tom has albinism, a recessive trait, so both of his alleles must be a."];
+    return ["bad","Tom has albinism. Albinism is recessive, so it only shows up when there is no working A allele. What must both of his alleles be?"]}});
+  fillQ(host,{id:"aJill",label:"Step 2",prompt:"What is Jill's genotype? (Jill is Jessica's mother.)",placeholder:"e.g. Aa",check:v=>{const g=normG(v,"a");
+    if(!g) return ["bad","Use two letters: A and/or a."];
+    if(g==="aa") return ["good","Right. Like Tom, Jill has albinism, so she is aa."];
+    return ["bad","Jill has albinism, the same as Tom. Use the same reasoning as Step 1."]}});
+  fillQ(host,{id:"aJess",label:"Step 3",prompt:"What is Jessica's genotype? Think about which allele Jill <em>had</em> to give her.",placeholder:"e.g. Aa",check:v=>{const g=normG(v,"a");
+    if(!g) return ["bad","Use two letters: A and/or a."];
+    if(g==="Aa") return ["good","Right. Jill (aa) could only give Jessica an a. Jessica has typical pigmentation, so her other allele must be A. Jessica is a heterozygous carrier, Aa."];
+    if(g==="AA") return ["bad","Jessica got one allele from each parent. Her mother Jill is aa. Which allele is the only one Jill could have passed on?"];
+    return ["bad","Jessica has typical pigmentation, so she must have at least one working A allele."]}});
+  const gamCheck=(want,who)=>v=>{const parts=v.split(/[\s,;/+]+/).filter(Boolean);
+    if(!parts.length) return ["bad","List the gametes separated by commas, e.g. A, a"];
+    if(parts.some(p=>p.length!==1)) return ["bad","Each gamete carries only <em>one</em> allele for this gene, because the two alleles separate during meiosis (Law of Segregation). Write single letters."];
+    if(parts.some(p=>p!=="A"&&p!=="a")) return ["bad","Use only A or a."];
+    const set=[...new Set(parts)].sort().join(",");
+    if(set===want) return ["good",want==="A,a"?`Right. ${who} can make two kinds of gametes, A and a, in equal numbers.`:`Right. ${who} can only make a gametes. You can write it as "a" or "a, a".`];
+    return ["bad",`Look at ${who}'s genotype from the earlier step. Split the two letters apart: each gamete gets one of them.`]};
+  fillQ(host,{id:"aJessG",label:"Step 4",prompt:"What kinds of gametes (eggs) can Jessica make?",placeholder:"A, a",cls:"",check:gamCheck("A,a","Jessica")});
+  fillQ(host,{id:"aTomG",label:"Step 5",prompt:"What kinds of gametes (sperm) can Tom make?",placeholder:"a",cls:"",check:gamCheck("a","Tom")});
+  // punnett 2x2
+  const pd=document.createElement("div"); pd.className="step";
+  pd.innerHTML=`<span class="lab">Step 6</span><p>Fill in the Punnett square. Jessica's gametes go down the side and Tom's go across the top. Each box gets one allele from its row and one from its column.</p>
+  <div class="tablewrap"><table class="pun"><thead><tr><th scope="col" class="corner">Jessica ↓ Tom →</th><th scope="col">a</th><th scope="col">a</th></tr></thead><tbody>
+  <tr><th scope="col">A</th><td><input data-p="0" aria-label="Row A, column a"></td><td><input data-p="1" aria-label="Row A, second column a"></td></tr>
+  <tr><th scope="col">a</th><td><input data-p="2" aria-label="Row a, column a"></td><td><input data-p="3" aria-label="Row a, second column a"></td></tr></tbody></table></div>
+  <div class="row"><button id="aPunCheck">Check</button></div><div id="aPunFb" aria-live="polite"></div>`;
+  host.appendChild(pd);
+  const want=["Aa","Aa","aa","aa"]; S.fill.aPun=S.fill.aPun||["","","",""];
+  const pins=pd.querySelectorAll("input[data-p]");
+  pins.forEach(i=>{i.type="text";i.autocomplete="off";i.spellcheck=false;i.value=S.fill.aPun[+i.dataset.p]||"";i.addEventListener("input",()=>{S.fill.aPun[+i.dataset.p]=i.value;i.classList.remove("ok","no");save()})});
+  const pcheck=()=>{let bad=0;pins.forEach(i=>{const g=normG(i.value,"a");const ok=g===want[+i.dataset.p];i.classList.toggle("ok",ok);i.classList.toggle("no",!ok);if(!ok)bad++});
+    S.chk.aPun=bad===0;save();
+    $("aPunFb").innerHTML=fbHTML([bad===0?["good","Right. Half the boxes are Aa and half are aa."]:["bad",`${bad} box${bad>1?"es":""} need${bad>1?"":"s"} another look. Copy the letter at the start of the row, then add the letter at the top of the column. Write the capital letter first.`]])};
+  $("aPunCheck").addEventListener("click",pcheck); if(S.chk.aPun!==undefined) pcheck();
+  mcQ(host,{id:"aGR",label:"Step 7",prompt:"What is the <strong>genotypic</strong> ratio of the children?",options:[
+    {t:"1 AA : 2 Aa : 1 aa",fb:"That is the ratio for Aa × Aa. Tom is aa, so none of the boxes contain AA."},
+    {t:"1 Aa : 1 aa",ok:true,fb:"Two of the four boxes are Aa and two are aa, which reduces to 1 : 1."},
+    {t:"All Aa",fb:"Look at the bottom row of your Punnett square."},
+    {t:"3 Aa : 1 aa",fb:"Count the boxes again: how many are Aa and how many are aa?"}]});
+  mcQ(host,{id:"aPR",label:"Step 8",prompt:"What is the <strong>phenotypic</strong> ratio of the children?",options:[
+    {t:"All typical pigmentation",fb:"Any aa child will have albinism. Are there aa boxes in your square?"},
+    {t:"3 typical : 1 albinism",fb:"3 : 1 comes from Aa × Aa. Here one parent is aa."},
+    {t:"1 typical : 1 albinism",ok:true,fb:"Aa children have typical pigmentation and aa children have albinism, in equal numbers."},
+    {t:"All albinism",fb:"Jessica can pass on an A allele, so some children will have typical pigmentation."}]});
+  mcQ(host,{id:"aP1",label:"Step 9",prompt:"What is the chance that Jessica and Tom's first child will have albinism?",options:[
+    {t:"0%",fb:"Look at how many boxes in your Punnett square are aa."},{t:"25%",fb:"25% would be 1 box out of 4. How many aa boxes do you have?"},
+    {t:"50%",ok:true,fb:"2 of the 4 boxes are aa, so each child has a 1 in 2 chance."},{t:"100%",fb:"Jessica carries an A allele she can pass on."}]});
+  mcQ(host,{id:"aP2",label:"Step 10",prompt:"Their first child has albinism. What is the chance their <em>second</em> child will too?",options:[
+    {t:"0%, because they already had one",fb:"Each fertilization is a new, independent event. The coins don't remember the last flip."},
+    {t:"25%",fb:"The odds for each child come from the Punnett square, and they don't change from child to child."},
+    {t:"50%",ok:true,fb:"Each child is an independent event, just like a coin flip, so the chance is still 50%."},
+    {t:"100%, because it runs in the family",fb:"Jessica can still pass on her A allele. Each child has the same 50% chance."}]});
+})();
+
+/* =====================================================
+   PART 3 — mystery peas
+   ===================================================== */
+const TRAY=(function(){
+  const r=rng(S.seed*7+13);
+  const type=r()<0.6?"3:1":"1:1";
+  for(let t=0;t<800;t++){
+    const peas=[];let y=0;
+    for(let i=0;i<96;i++){const isY=type==="3:1"?r()<.75:r()<.5;peas.push(isY?1:0);if(isY)y++}
+    const Ey=type==="3:1"?72:48,Eg=96-Ey,g=96-y;
+    const chi=(y-Ey)**2/Ey+(g-Eg)**2/Eg;
+    if(chi<2.6&&y!==Ey){
+      const jit=[];for(let i=0;i<96;i++)jit.push([(r()-.5)*7,(r()-.5)*7,r()*360]);
+      return {type,peas,y,g,Ey,Eg,jit};
+    }
+  }
+})();
+$("seedTableMode").checked=!!S.mono.textGrid;
+function updateSeedMode(){const mode=$("seedTableMode").checked;$("illustratedTray").hidden=mode;$("seedTextGrid").hidden=!mode;S.mono.textGrid=mode;save();drawTray()}
+$("seedTableMode").addEventListener("change",updateSeedMode);
+$("seedTextGrid").addEventListener("click",e=>{const b=e.target.closest("button[data-seed]");if(!b)return;const i=+b.dataset.seed;toggleMark(i);const next=$("seedTextGrid").querySelector(`[data-seed="${i}"]`);if(next)next.focus()});
+function drawTray(){
+  const svg=$("traySvg"); const lab=$("peaLabels").checked; let h="";
+  for(let row=0;row<8;row++){h+=`<text x="10" y="${32+row*50}" style="fill:#f4e7d4;font:12px 'IBM Plex Mono',monospace" dominant-baseline="central">${row+1}</text>`}
+  TRAY.peas.forEach((p,i)=>{const row=Math.floor(i/12),col=i%12;const [jx,jy]=TRAY.jit[i];
+    const x=52+col*46+jx,y=32+row*50+jy,m=S.mono.marks.includes(i);
+    h+=`<g class="pea ${p?"y":"g"} ${m?"marked":""}" data-i="${i}" tabindex="0" role="button" aria-pressed="${m}" aria-label="Row ${row+1}, seed ${col+1}: ${p?"yellow":"green"}${m?", marked":""}" transform="translate(${x.toFixed(1)} ${y.toFixed(1)})">
+      <circle class="ring" r="20"/><circle class="b" r="17"/><ellipse class="shine" cx="-6" cy="-6" rx="5" ry="3.5"/>
+      ${lab?`<text class="lt">${p?"Y":"G"}</text>`:""}
+      ${m?`<path class="mk" d="M-7,0 L-2,6 L8,-6"/>`:""}</g>`});
+  svg.innerHTML=h;
+  const grid=$("seedTextGrid");
+  let table=`<p id="seed-grid-instructions">Each button gives the seed color and whether it has been marked. Select a seed to toggle its mark.</p><table aria-describedby="seed-grid-instructions"><caption>Seed tray: eight rows, twelve seeds per row</caption><thead><tr><th scope="col">Row</th>${Array.from({length:12},(_,i)=>`<th scope="col">${i+1}</th>`).join("")}</tr></thead><tbody>`;
+  for(let row=0;row<8;row++){table+=`<tr><th scope="row">${row+1}</th>`;for(let col=0;col<12;col++){const i=row*12+col,p=TRAY.peas[i],m=S.mono.marks.includes(i);table+=`<td><button type="button" data-seed="${i}" aria-pressed="${m}" aria-label="Row ${row+1}, seed ${col+1}, ${p?"yellow":"green"}, ${m?"marked":"not marked"}">${p?"Y":"G"}${m?" ✓":""}</button></td>`}table+="</tr>"}table+="</tbody></table>";
+  grid.innerHTML=table;
+}
+function toggleMark(i){const k=S.mono.marks.indexOf(i);if(k>=0)S.mono.marks.splice(k,1);else S.mono.marks.push(i);save();drawTray();
+  const el=S.mono.textGrid?$("seedTextGrid").querySelector(`[data-seed="${i}"]`):$("traySvg").querySelector(`[data-i="${i}"]`);if(el)el.focus()}
+$("traySvg").addEventListener("click",e=>{const g=e.target.closest(".pea");if(g)toggleMark(+g.dataset.i)});
+$("traySvg").addEventListener("keydown",e=>{const g=e.target.closest(".pea");if(!g)return;const i=+g.dataset.i;
+  if(e.key==="Enter"||e.key===" "){e.preventDefault();toggleMark(i)}
+  const mv={ArrowRight:1,ArrowLeft:-1,ArrowDown:12,ArrowUp:-12}[e.key];
+  if(mv!==undefined){e.preventDefault();const j=i+mv;if(j>=0&&j<96)$("traySvg").querySelector(`[data-i="${j}"]`).focus()}});
+$("peaLabels").checked=!!S.mono.labels;
+$("peaLabels").addEventListener("change",e=>{S.mono.labels=e.target.checked;save();drawTray()});
+$("cntClear").addEventListener("click",()=>{S.mono.marks=[];save();drawTray()});
+$("cntY").value=S.mono.cY;$("cntG").value=S.mono.cG;
+["cntY","cntG"].forEach(id=>$(id).addEventListener("input",e=>{S.mono[id==="cntY"?"cY":"cG"]=e.target.value;e.target.classList.remove("ok","no");save()}));
+function checkCount(quiet){
+  const y=parseInt(S.mono.cY),g=parseInt(S.mono.cG),out=[];
+  const ok=y===TRAY.y&&g===TRAY.g;
+  $("cntY").classList.toggle("ok",y===TRAY.y);$("cntY").classList.toggle("no",y!==TRAY.y);
+  $("cntG").classList.toggle("ok",g===TRAY.g);$("cntG").classList.toggle("no",g!==TRAY.g);
+  if(ok) out.push(["good",`Correct: ${TRAY.y} yellow and ${TRAY.g} green, ${TRAY.y+TRAY.g} seeds in all.`]);
+  else{
+    if(!quiet) S.mono.tries=(S.mono.tries||0)+1;
+    if(isNaN(y)||isNaN(g)) out.push(["bad","Enter both counts."]);
+    else{
+      if(y+g!==96) out.push(["bad",`Your counts add up to ${y+g}, but there are 96 seeds (8 rows of 12).`]);
+      if(y!==TRAY.y) out.push(["bad",`Your yellow count is ${Math.abs(y-TRAY.y)} too ${y>TRAY.y?"high":"low"}.`]);
+      if(g!==TRAY.g) out.push(["bad",`Your green count is ${Math.abs(g-TRAY.g)} too ${g>TRAY.g?"high":"low"}.`]);
+      out.push(["hint","Try counting just the green seeds row by row, marking each one as you go. Then yellow = 96 − green."]);
+    }
+  }
+  S.chk.cnt=ok;save();
+  $("cntReveal").hidden=ok||(S.mono.tries||0)<2;
+  $("cntFb").innerHTML=fbHTML(out); renderMonoGate(); if(chi2)chi2.render();
+}
+$("cntCheck").addEventListener("click",()=>checkCount());
+$("cntReveal").addEventListener("click",()=>{S.mono.cY=String(TRAY.y);S.mono.cG=String(TRAY.g);$("cntY").value=S.mono.cY;$("cntG").value=S.mono.cG;checkCount(true)});
+const is31=TRAY.type==="3:1";
+(function(){
+  const host=$("monoSteps");
+  host.insertAdjacentHTML("beforeend",`<h3>Steps 2–4 · Work backward to the parents</h3>
+   <div class="callout"><strong>How this works.</strong> Each cross gives a typical ratio of offspring. Once you know the ratio, you can match it to the cross. Here are the crosses that matter for one gene:
+   <div class="tablewrap" style="margin-top:8px"><table><thead><tr><th scope="col">Parents</th><th scope="col">Offspring genotypes</th><th scope="col">Offspring phenotypes</th></tr></thead><tbody>
+   <tr><td class="mono">YY × anything</td><td>all have at least one Y</td><td>all yellow</td></tr>
+   <tr><td class="mono">Yy × Yy</td><td>1 YY : 2 Yy : 1 yy</td><td>3 yellow : 1 green</td></tr>
+   <tr><td class="mono">Yy × yy</td><td>1 Yy : 1 yy</td><td>1 yellow : 1 green</td></tr>
+   <tr><td class="mono">yy × yy</td><td>all yy</td><td>all green</td></tr></tbody></table></div></div>
+   <div id="monoGate" class="fb hint">Check your seed counts in Step 1 first.</div><div id="monoInner" class="stack"></div>`);
+  const inner=$("monoInner");
+  fillQ(inner,{id:"mRatio",label:"Step 2a",prompt:"Divide your yellow count by your green count. What do you get? (Round to two decimal places.)",placeholder:"e.g. 2.50",check:v=>{
+    const x=num(v),t=TRAY.y/TRAY.g; if(isNaN(x)) return ["bad","Enter a number, such as 2.75."];
+    if(near(x,t,0.02)) return ["good",`Right: ${TRAY.y} ÷ ${TRAY.g} = ${t.toFixed(2)}. That means about ${t.toFixed(1)} yellow seeds for every 1 green seed.`];
+    if(near(x,TRAY.g/TRAY.y,0.02)) return ["bad","You divided green by yellow. Put yellow on top: yellow ÷ green."];
+    return ["bad",`Check your division: yellow ÷ green = ${TRAY.y} ÷ ${TRAY.g}.`]}});
+  mcQ(inner,{id:"mNear",label:"Step 2b",prompt:"Which simple ratio is your result closest to?",options:[
+    {t:"All yellow (no green)",fb:"You found green seeds, so this can't be right."},
+    {t:"3 yellow : 1 green (yellow ÷ green ≈ 3)",ok:is31,fb:is31?"Your ratio is close to 3. It won't be exactly 3 because each seed's color is a matter of chance.":"A 3 : 1 ratio would give yellow ÷ green close to 3. Is yours that high?"},
+    {t:"1 yellow : 1 green (yellow ÷ green ≈ 1)",ok:!is31,fb:!is31?"Your ratio is close to 1. It won't be exactly 1 because each seed's color is a matter of chance.":"A 1 : 1 ratio would give yellow ÷ green close to 1. Yours is much higher."},
+    {t:"1 yellow : 3 green (yellow ÷ green ≈ 0.33)",fb:"You have more yellow seeds than green ones, so the ratio must be above 1."}]});
+  mcQ(inner,{id:"mCross",label:"Step 3",prompt:"Which cross between parent plants most likely produced these seeds?",options:[
+    {t:"YY × yy",fb:"Every offspring would get Y from the YY parent, so all the seeds would be yellow."},
+    {t:"YY × Yy",fb:"Every offspring would get Y from the YY parent, so all the seeds would be yellow."},
+    {t:"Yy × Yy",ok:is31,fb:is31?"Both parents are heterozygous. Each can pass on y, so 1 in 4 offspring is yy (green).":"Yy × Yy gives 3 yellow : 1 green. Your ratio is closer to 1 : 1."},
+    {t:"Yy × yy",ok:!is31,fb:!is31?"One parent is heterozygous and one is green (yy). Half the offspring get Y and half get y from the Yy parent, giving 1 : 1.":"Yy × yy gives 1 yellow : 1 green. Your ratio is closer to 3 : 1."},
+    {t:"yy × yy",fb:"Two green parents can only pass on y, so every seed would be green."}]});
+  const ed=document.createElement("div");ed.className="step";
+  ed.innerHTML=`<span class="lab">Step 4</span><p>If your cross is right, how many yellow and green seeds would you <strong>expect</strong> out of 96? Multiply the total by the fraction of each type. For example, in a 1 : 3 ratio, 1 out of every 4 is the first type, so you'd expect 96 × ¼ = 24 of them.</p>
+   <div class="row"><label class="row" style="gap:6px">Expected yellow <input type="text" inputmode="numeric" class="sm" id="eY"></label><label class="row" style="gap:6px">Expected green <input type="text" inputmode="numeric" class="sm" id="eG"></label><button id="eCheck">Check</button></div><div id="eFb" aria-live="polite"></div>`;
+  inner.appendChild(ed);
+  $("eY").value=S.fill.eY||"";$("eG").value=S.fill.eG||"";
+  ["eY","eG"].forEach(id=>$(id).addEventListener("input",e=>{S.fill[id]=e.target.value;e.target.classList.remove("ok","no");save()}));
+  const echeck=()=>{const y=num(S.fill.eY),g=num(S.fill.eG),out=[];
+    const okY=y===TRAY.Ey,okG=g===TRAY.Eg;$("eY").classList.toggle("ok",okY);$("eY").classList.toggle("no",!okY);$("eG").classList.toggle("ok",okG);$("eG").classList.toggle("no",!okG);
+    if(!S.chk.mCross) out.push(["bad","Get Step 3 right first, because your expected numbers depend on which cross you picked."]);
+    else if(okY&&okG) out.push(["good",is31?"Right: 96 × ¾ = 72 yellow and 96 × ¼ = 24 green.":"Right: 96 × ½ = 48 yellow and 96 × ½ = 48 green."]);
+    else if((y===3&&g===1)||(y===1&&g===1)) out.push(["bad","Those are the ratio numbers. Turn them into numbers of seeds by multiplying 96 by each fraction."]);
+    else if(y===TRAY.y&&g===TRAY.g) out.push(["bad","Those are your observed counts. Expected numbers come from the ratio, not from what you counted."]);
+    else out.push(["bad",is31?"In a 3 : 1 ratio, 3 out of every 4 are yellow. What is 96 × ¾? And 96 × ¼?":"In a 1 : 1 ratio, half are yellow and half are green. What is 96 × ½?"]);
+    if(okY&&okG&&y+g!==96) out.push(["bad","Expected numbers should add up to 96."]);
+    S.chk.mExp=okY&&okG&&!!S.chk.mCross;save();$("eFb").innerHTML=fbHTML(out);if(chi2)chi2.render()};
+  $("eCheck").addEventListener("click",echeck); if(S.fill.eY||S.fill.eG) echeck();
+})();
+function renderMonoGate(){const ok=!!S.chk.cnt;$("monoGate").hidden=ok;$("monoInner").hidden=!ok}
+chi2=makeChi("c2","chi2",()=>{if(!S.chk.cnt||!S.chk.mExp) return null;
+  return [{label:"Yellow",O:TRAY.y,E:TRAY.Ey},{label:"Green",O:TRAY.g,E:TRAY.Eg}]},"Finish Steps 1–4 first. You need checked seed counts and expected numbers.");
+
+/* =====================================================
+   PART 4 — dihybrid
+   ===================================================== */
+const GAM=["YR","Yr","yR","yr"];
+const PH=[{n:"Yellow, round",s:"yellow round"},{n:"Yellow, wrinkled",s:"yellow wrinkled"},{n:"Green, round",s:"green round"},{n:"Green, wrinkled",s:"green wrinkled"}];
+function normGam(v){const s=v.replace(/[\s,]/g,"");if(s.length!==2)return {err:s.length>2?"long":"short"};
+  const y=[...s].filter(c=>c==="Y"||c==="y"),r=[...s].filter(c=>c==="R"||c==="r");
+  if(y.length!==1||r.length!==1) return {err:"gene"};return {g:y[0]+r[0]}}
+function normDi(v){const s=v.replace(/[\s,]/g,"");const y=[...s].filter(c=>c==="Y"||c==="y"),r=[...s].filter(c=>c==="R"||c==="r");
+  if(y.length+r.length!==s.length||y.length!==2||r.length!==2) return null;
+  const srt=(a,U)=>a.sort((p,q)=>(p===U?0:1)-(q===U?0:1)).join("");return srt(y,"Y")+srt(r,"R")}
+function cellWant(i){const a=GAM[Math.floor(i/4)],b=GAM[i%4];return normDi(a+b)}
+function cellPh(i){const g=cellWant(i);const Y=g.includes("Y"),R=g.includes("R");return Y?(R?0:1):(R?2:3)}
+(function(){
+  const host=$("diSteps");
+  host.innerHTML=`<h3>Build the square step by step</h3>
+  <div class="step"><span class="lab">Step 1 · Find the gametes</span>
+    <p>Each gamete gets <strong>one</strong> allele of the color gene (Y or y) <strong>and one</strong> allele of the shape gene (R or r). A quick way to list every combination for <span class="mono">YyRr</span> is the <strong>FOIL</strong> method from algebra:</p>
+    <div class="tablewrap"><table style="width:auto"><tbody>
+      <tr><td><strong>F</strong>irst</td><td>first Y-gene letter + first R-gene letter</td><td class="mono">Y + R</td></tr>
+      <tr><td><strong>O</strong>uter</td><td>first Y-gene letter + last R-gene letter</td><td class="mono">Y + r</td></tr>
+      <tr><td><strong>I</strong>nner</td><td>last Y-gene letter + first R-gene letter</td><td class="mono">y + R</td></tr>
+      <tr><td><strong>L</strong>ast</td><td>last Y-gene letter + last R-gene letter</td><td class="mono">y + r</td></tr></tbody></table></div>
+    <p>Write the four gametes a <span class="mono">YyRr</span> plant can make. Both parents are <span class="mono">YyRr</span>, so both make the same four.</p>
+    <div class="row">${[0,1,2,3].map(i=>`<input type="text" class="xs" data-gam="${i}" aria-label="Gamete ${i+1}" autocomplete="off" spellcheck="false">`).join("")}<button id="gCheck">Check</button></div>
+    <div id="gFb" aria-live="polite"></div></div>
+  <div class="step"><span class="lab">Step 2 · Fill in the 16 boxes</span>
+    <p>Put one parent's gametes across the top and the other's down the side (done for you below). For each box, combine the row gamete with the column gamete, then group the letters by gene with the capital first. For example, row <span class="mono">Yr</span> + column <span class="mono">yR</span> → <span class="mono">YyRr</span>.</p>
+    <div id="gridWrap"></div></div>
+  <div class="step"><span class="lab">Step 3 · Sort by phenotype</span>
+    <p>Now decide what each offspring looks like. Remember: one capital <span class="mono">Y</span> is enough for yellow, and one capital <span class="mono">R</span> is enough for round. Pick a phenotype below, then click every box that has it.</p>
+    <div id="paintWrap"></div></div>
+  <div id="diMore" class="stack"></div>`;
+  const gins=host.querySelectorAll("[data-gam]");
+  gins.forEach(i=>{i.value=S.di.gam[+i.dataset.gam]||"";i.addEventListener("input",()=>{S.di.gam[+i.dataset.gam]=i.value;i.classList.remove("ok","no");save()})});
+  const gcheck=()=>{const out=[];const got=[];let bad=false;
+    gins.forEach(i=>{const v=i.value.trim();if(!v){i.classList.add("no");bad=true;return}const r=normGam(v);
+      if(r.err){i.classList.add("no");i.classList.remove("ok");bad=true;
+        out.push(["bad",`"${esc(v)}": ${r.err==="long"?"a gamete has only two letters, one for each gene.":r.err==="gene"?"a gamete needs one Y-gene letter (Y or y) and one R-gene letter (R or r). It can't have two of the same gene, because the two alleles of a gene separate into different gametes.":"a gamete needs one letter for each gene."}`]);}
+      else{got.push(r.g);i.classList.remove("no");i.classList.add("ok")}});
+    const uniq=new Set(got);
+    if(!bad&&got.length===4&&uniq.size<4){out.push(["bad","You have a repeat. All four gametes should be different. Try FOIL again."]);gins.forEach(i=>{i.classList.remove("ok");i.classList.add("no")});bad=true}
+    if(gins.length&&[...gins].some(i=>!i.value.trim())&&!out.length) out.push(["bad","Fill in all four gametes."]);
+    const ok=!bad&&uniq.size===4&&GAM.every(g=>uniq.has(g));
+    if(ok) out.push(["good","Right: YR, Yr, yR, yr. Each is equally likely (¼ each), because the two genes assort independently."]);
+    S.chk.dGam=ok;S.di.gTries=(S.di.gTries||0)+(ok?0:1);save();
+    $("gFb").innerHTML=fbHTML(out);renderGrid()};
+  $("gCheck").addEventListener("click",gcheck); if(S.di.gam.some(Boolean)) gcheck(); else renderGrid();
+})();
+function renderGrid(){
+  const w=$("gridWrap");
+  if(!S.chk.dGam&&!S.di.gRevealed){w.innerHTML=`<div class="fb hint">Get the four gametes right in Step 1 to set up the square.${(S.di.gTries||0)>=2?` <button id="gReveal">Show me the gametes</button>`:""}</div>`;
+    const b=$("gReveal");if(b)b.addEventListener("click",()=>{S.di.gRevealed=true;save();renderGrid()});$("paintWrap").innerHTML="";$("diMore").innerHTML="";$("diMore").dataset.built="0";return}
+  let h=`<div class="tablewrap"><table class="pun"><thead><tr><th scope="col" class="corner">Parent 1 ↓<br>Parent 2 →</th>${GAM.map(g=>`<th scope="col">${g}</th>`).join("")}</tr></thead><tbody>`;
+  for(let r=0;r<4;r++){h+=`<tr><th scope="col">${GAM[r]}</th>`;for(let c=0;c<4;c++){const i=r*4+c;h+=`<td><input type="text" data-cell="${i}" aria-label="Row ${GAM[r]}, column ${GAM[c]}" autocomplete="off" spellcheck="false" value="${esc(S.di.cells[i]||"")}"></td>`}h+=`</tr>`}
+  h+=`</tbody></table></div><div class="row"><button id="cCheck" class="primary">Check my square</button><button id="cExample">Fill in the first box for me</button><span id="cProg" class="note"></span></div><div id="cFb" class="fbs" aria-live="polite"></div>`;
+  w.innerHTML=h;
+  const ins=w.querySelectorAll("[data-cell]");
+  ins.forEach(i=>i.addEventListener("input",()=>{S.di.cells[+i.dataset.cell]=i.value;i.classList.remove("ok","no");save()}));
+  $("cExample").addEventListener("click",()=>{S.di.cells[0]="YYRR";ins[0].value="YYRR";save();
+    $("cFb").innerHTML=fbHTML([["hint","Row YR + column YR → Y from each and R from each → <span class='mono'>YYRR</span>. Now try the box to its right: row YR + column Yr."]])});
+  const ccheck=()=>{let right=0;const tips=[];
+    ins.forEach(inp=>{const i=+inp.dataset.cell,v=inp.value.trim();const n=v?normDi(v):null,ok=n===cellWant(i);
+      inp.classList.toggle("ok",ok);inp.classList.toggle("no",!ok&&!!v);if(ok)right++;
+      else if(v&&!n&&tips.length<2) tips.push(["bad",`"${esc(v)}" (row ${GAM[Math.floor(i/4)]}, column ${GAM[i%4]}): each box needs exactly four letters, two for the Y gene and two for the R gene.`]);
+      else if(v&&n&&tips.length<2) tips.push(["bad",`Row ${GAM[Math.floor(i/4)]}, column ${GAM[i%4]}: take the Y-gene letter from the row and the one from the column, then do the same for the R gene.`]);});
+    const ok=right===16;S.chk.dGrid=ok;S.di.cTries=(S.di.cTries||0)+(ok?0:1);save();
+    $("cProg").textContent=`${right} / 16 correct`;
+    const out=ok?[["good","All 16 boxes are correct."]]:[["bad",`${16-right} box${16-right>1?"es are":" is"} empty or need${16-right>1?"":"s"} another look (marked in red).`],...tips];
+    if(!ok&&S.di.cTries>=3) out.push(["hint",`Stuck? <button id="cReveal">Fill in the rest for me</button>`]);
+    $("cFb").innerHTML=fbHTML(out);
+    const rb=$("cReveal");if(rb)rb.addEventListener("click",()=>{for(let i=0;i<16;i++)S.di.cells[i]=cellWant(i);S.di.cRevealed=true;save();renderGrid()});
+    renderPaint()};
+  $("cCheck").addEventListener("click",ccheck);
+  if(S.di.cells.some(Boolean)) ccheck(); else renderPaint();
+}
+function renderPaint(){
+  const w=$("paintWrap");
+  if(!S.chk.dGrid){w.innerHTML=`<div class="fb hint">Finish the 16 genotypes in Step 2 first.</div>`;$("diMore").innerHTML="";$("diMore").dataset.built="0";return}
+  let h=`<div class="palette" role="group" aria-label="Phenotype to apply">${PH.map((p,i)=>`<button class="ph${i}" data-ph="${i}" aria-pressed="${i===paintSel}">${p.n}</button>`).join("")}</div>
+  <div class="tablewrap"><table class="pun"><thead><tr><th scope="col" class="corner"></th>${GAM.map(g=>`<th scope="col">${g}</th>`).join("")}</tr></thead><tbody>`;
+  for(let r=0;r<4;r++){h+=`<tr><th scope="col">${GAM[r]}</th>`;for(let c=0;c<4;c++){const i=r*4+c,p=S.di.paint[i];
+    h+=`<td><button class="cell ${p>=0?"ph"+p:""}" data-pc="${i}" aria-label="${cellWant(i)}: ${p>=0?PH[p].s:"not sorted yet"}">${cellWant(i)}<small>${p>=0?PH[p].s:"&nbsp;"}</small></button></td>`}h+=`</tr>`}
+  h+=`</tbody></table></div><div class="row"><button class="primary" id="pCheck">Check my sorting</button></div><div id="pFb" class="fbs" aria-live="polite"></div>`;
+  w.innerHTML=h;
+  w.querySelectorAll("[data-ph]").forEach(b=>b.addEventListener("click",()=>{paintSel=+b.dataset.ph;w.querySelectorAll("[data-ph]").forEach(x=>x.setAttribute("aria-pressed",+x.dataset.ph===paintSel))}));
+  w.querySelectorAll("[data-pc]").forEach(b=>b.addEventListener("click",()=>{const i=+b.dataset.pc;S.di.paint[i]=paintSel;save();
+    b.className="cell ph"+paintSel;b.querySelector("small").textContent=PH[paintSel].s;b.setAttribute("aria-label",`${cellWant(i)}: ${PH[paintSel].s}`)}));
+  const pcheck=()=>{const tally=[0,0,0,0];let wrong=0,blank=0;
+    w.querySelectorAll("[data-pc]").forEach(b=>{const i=+b.dataset.pc,p=S.di.paint[i];if(p<0){blank++;b.classList.add("no");return}tally[p]++;const ok=p===cellPh(i);b.classList.toggle("no",!ok);if(!ok)wrong++});
+    const ok=!wrong&&!blank;S.chk.dPaint=ok;save();
+    const out=[];
+    if(ok) out.push(["good",`All sorted. You have ${tally[0]} yellow round, ${tally[1]} yellow wrinkled, ${tally[2]} green round, and ${tally[3]} green wrinkled.`]);
+    else{if(blank) out.push(["bad",`${blank} box${blank>1?"es":""} still need${blank>1?"":"s"} a phenotype.`]);
+      if(wrong) out.push(["bad",`${wrong} box${wrong>1?"es are":" is"} sorted wrong (dashed red border). Check: is there at least one capital Y? At least one capital R?`])}
+    $("pFb").innerHTML=fbHTML(out);renderDiMore()};
+  $("pCheck").addEventListener("click",pcheck);
+  if(S.di.paint.some(p=>p>=0)) pcheck(); else renderDiMore();
+}
+function renderDiMore(){
+  const host=$("diMore");
+  if(!S.chk.dPaint){host.innerHTML="";host.dataset.built="0";return}
+  if(host.dataset.built==="1") return;
+  host.dataset.built="1";host.innerHTML="";
+  mcQ(host,{id:"dRatio",label:"Step 4 · The phenotypic ratio",prompt:"What is the phenotypic ratio (yellow round : yellow wrinkled : green round : green wrinkled)?",options:[
+    {t:"1 : 1 : 1 : 1",fb:"That would happen if every gamete combination gave a different look. Count how many boxes you sorted into each phenotype."},
+    {t:"9 : 3 : 3 : 1",ok:true,fb:"This is Mendel's famous dihybrid ratio. 9/16 show both dominant traits and only 1/16 shows both recessive traits."},
+    {t:"3 : 1",fb:"3 : 1 is the ratio for one gene. With two genes there are four phenotypes."},
+    {t:"1 : 2 : 1",fb:"That is a genotypic ratio for one gene. Count your four phenotype groups."}]});
+  const d=document.createElement("div");d.className="step";
+  d.innerHTML=`<span class="lab">Step 5 · A shortcut</span>
+   <p>Because the two genes assort independently, you can treat them separately and <strong>multiply</strong>. For <span class="mono">Yy × Yy</span> alone, ¾ of offspring are yellow. For <span class="mono">Rr × Rr</span> alone, ¾ are round. So the chance of yellow <em>and</em> round = ¾ × ¾ = <strong>9/16</strong>. That matches your square.</p>
+   <p>Use the shortcut. Write fractions like 3/16.</p>`;
+  host.appendChild(d);
+  const fq=(id,prompt,ans,expl,hint)=>fillQ(d,{id,label:"",prompt,placeholder:"e.g. 1/4",check:v=>{
+    let x=NaN;const m=v.match(/^\s*(\d+)\s*\/\s*(\d+)\s*$/);if(m)x=+m[1]/+m[2];else x=num(v);
+    if(isNaN(x)) return ["bad","Write a fraction like 3/16 or a decimal."];
+    if(near(x,ans,0.002)) return ["good",expl];return ["bad",hint]}});
+  fq("dF1","Chance of a <strong>green, wrinkled</strong> seed (yy and rr)?",1/16,"Right: ¼ green × ¼ wrinkled = 1/16.","Green alone is ¼ (only yy). Wrinkled alone is ¼ (only rr). Multiply them.");
+  fq("dF2","Chance of a <strong>yellow, wrinkled</strong> seed?",3/16,"Right: ¾ yellow × ¼ wrinkled = 3/16.","Yellow alone is ¾ and wrinkled alone is ¼. Multiply them.");
+  fillQ(d,{id:"dF3",label:"",prompt:"This cross produces <strong>160</strong> seeds. How many green, wrinkled seeds would you expect?",placeholder:"number",check:v=>{const x=num(v);
+    if(isNaN(x)) return ["bad","Enter a number."];if(near(x,10,0.01)) return ["good","Right: 160 × 1/16 = 10. This is exactly how you'd get expected numbers for a chi-square test."];
+    if(near(x,1,0.01)) return ["bad","1 is the ratio number. Multiply the total, 160, by the fraction 1/16."];
+    return ["bad","Expected number = total × fraction. Multiply 160 by the chance you found for green, wrinkled."]}});
+  d.querySelectorAll(".step").forEach(s=>{s.style.borderLeft="0";s.style.paddingLeft="0";const l=s.querySelector(".lab");if(l&&!l.textContent)l.remove()});
+}
+
+/* =====================================================
+   PART 5 — family traits
+   ===================================================== */
+const TRAITS=[
+ {id:"lobe",L:"F",name:"Earlobes",dom:"Free (hangs below where it joins the head)",rec:"Attached (joins the side of the head directly)",
+  how:"Look in a mirror or at a side-view photo. If the bottom of the earlobe hangs down below the point where it joins the head, it is free. If it joins the head directly with no hanging part, it is attached.",
+  real:"Earlobe shape is influenced by at least 49 different genes, and many people fall somewhere in between free and attached. It is a poor fit for the one-gene model, so expect some families that don't fit."},
+ {id:"peak",L:"W",name:"Hairline",dom:"Widow's peak (hairline dips to a V in the middle of the forehead)",rec:"Straight hairline",
+  how:"Pull your hair back and look at the middle of your hairline in a mirror or a front-facing photo.",
+  real:"There is no good evidence that a single gene controls widow's peak. Hairlines also change with age, especially in men, so older relatives can be hard to score."},
+ {id:"dimp",L:"D",name:"Cheek dimples",dom:"Dimples (small dents in one or both cheeks when smiling)",rec:"No dimples",
+  how:"Smile in a mirror. Smiling photos work well for family members.",
+  real:"Dimples are often taught as dominant, but family studies give mixed results, and some people's dimples appear or fade as they grow up."},
+ {id:"wax",L:"E",name:"Earwax type",dom:"Wet (sticky, yellow to brown)",rec:"Dry (flaky, gray or tan)",
+  how:"Check gently with a cotton swab at the opening of the ear only. Never push anything into the ear canal. For family members, just ask.",
+  real:"This one is the real deal. Earwax type is controlled by a single gene (ABCC11), and wet is dominant to dry. Dry earwax is the most common type in East Asian populations and rare in European and African populations, a good example of a recessive trait that is the majority in some groups."}
+];
+const PRACTICE={nSib:1,
+  lobe:{me:"D",mom:"R",dad:"D",sibs:["D"]},
+  peak:{me:"R",mom:"D",dad:"D",sibs:["D"]},
+  dimp:{me:"D",mom:"D",dad:"D",sibs:["R"]},
+  wax:{me:"D",mom:"D",dad:"U",sibs:["U"]}};
+function famData(tid){
+  if(S.fam.mode==="practice"){const p=PRACTICE[tid];return {me:p.me,mom:p.mom,dad:p.dad,sibs:p.sibs.slice(0,PRACTICE.nSib)}}
+  const d=S.fam.mine[tid]||{};const n=S.fam.nSib;const sibs=[];for(let i=0;i<n;i++)sibs.push((d.sibs&&d.sibs[i])||"U");
+  return {me:d.me||"",mom:d.mom||"U",dad:d.dad||"U",sibs};
+}
+function analyze(ph){
+  const G=[2,1,0],fits=(g,p)=>p==="U"||!p?true:(p==="D"?g>0:g===0),al=g=>g===2?[1]:g===1?[1,0]:[0];
+  const R={me:new Set(),mom:new Set(),dad:new Set(),fm:new Set(),fd:new Set(),ok:false};
+  for(const mg of G){if(!fits(mg,ph.mom))continue;for(const dg of G){if(!fits(dg,ph.dad))continue;
+    const kidOK=p=>al(mg).some(a=>al(dg).some(b=>fits(a+b,p)));
+    if(!ph.sibs.every(s=>s==="U"||kidOK(s)))continue;
+    for(const a of al(mg))for(const b of al(dg)){if(!fits(a+b,ph.me))continue;R.me.add(a+b);R.mom.add(mg);R.dad.add(dg);R.fm.add(a);R.fd.add(b);R.ok=true}}}
+  return R;
+}
+const gStr=(g,L)=>g===2?L+L:g===1?L+L.toLowerCase():L.toLowerCase()+L.toLowerCase();
+function setStr(set,L){const a=[...set].sort().reverse();if(a.length===3)return "unknown";if(a.length===2&&a[0]===2&&a[1]===1)return `${L}${L} or ${L}${L.toLowerCase()}`;return a.map(g=>gStr(g,L)).join(" or ")}
+function meAnswer(R){const a=[...R.me];if(a.length===1)return String(a[0]);if(R.me.has(2)&&R.me.has(1)&&a.length===2)return "21";return "x"}
+function alAnswer(set){const a=[...set];return a.length===1?String(a[0]):"?"}
+function explain(t,ph,R){
+  const L=t.L,l=L.toLowerCase(),P=[];
+  if(!R.ok){
+    return `<strong>This family doesn't fit the simple one-gene model.</strong> For example, two parents who both show the recessive trait (${l}${l} × ${l}${l}) can only pass on ${l} alleles, so all their children should show the recessive trait too. Results like this are real evidence that ${t.name.toLowerCase()} is <em>not</em> a simple one-gene trait. They say nothing about how family members are related.`;
+  }
+  if(ph.me==="R"){P.push(`You show the recessive trait, so you must be <span class="mono">${l}${l}</span>. That means you got one <span class="mono">${l}</span> from each parent.`);
+    ["mom","dad"].forEach(k=>{if(ph[k]==="D")P.push(`Your ${k==="mom"?"mother":"father"} shows the dominant trait but passed you a <span class="mono">${l}</span>, so ${k==="mom"?"she":"he"} must be a heterozygous carrier, <span class="mono">${L}${l}</span>.`)});
+  } else {
+    P.push(`You show the dominant trait, so you have at least one <span class="mono">${L}</span>.`);
+    const forced=["mom","dad"].filter(k=>ph[k]==="R");
+    if(forced.length===1){const k=forced[0],o=k==="mom"?"father":"mother";P.push(`Your ${k==="mom"?"mother":"father"} is <span class="mono">${l}${l}</span> and could only give you <span class="mono">${l}</span>. So your <span class="mono">${L}</span> came from your ${o}, and you are <span class="mono">${L}${l}</span>.`)}
+    else{
+      const sibR=ph.sibs.some(s=>s==="R");
+      if(sibR&&ph.mom!=="R"&&ph.dad!=="R") P.push(`Your sibling shows the recessive trait (<span class="mono">${l}${l}</span>), so each parent must carry a <span class="mono">${l}</span>. If both parents show the dominant trait, they are both <span class="mono">${L}${l}</span>. A child of <span class="mono">${L}${l} × ${L}${l}</span> who shows the dominant trait has a 1 in 3 chance of being <span class="mono">${L}${L}</span> and a 2 in 3 chance of being <span class="mono">${L}${l}</span>.`);
+      if(R.me.size>1) P.push(`Since neither parent is known to be <span class="mono">${l}${l}</span>, your second allele could be either <span class="mono">${L}</span> or <span class="mono">${l}</span>. From appearance alone you can't tell, and so you can't tell which parent gave you which allele. (A plant breeder would use a test cross. For people, only a DNA test could tell.)`);
+    }
+  }
+  P.push(`<span class="note">Based on everyone you entered: mother ${setStr(R.mom,L)}, father ${setStr(R.dad,L)}.</span>`);
+  return P.join(" ");
+}
+function pedigree(t,ph,R,showG){
+  const n=ph.sibs.length,kids=[{k:"Me",p:ph.me,me:true},...ph.sibs.map((s,i)=>({k:"Sibling "+(i+1),p:s}))];
+  const W=440,kw=Math.min(90,(W-40)/kids.length),x0=W/2-(kids.length-1)*kw/2;
+  const shape=(x,y,type,p)=>{const f=p==="R"?"fill":"";let s="";
+    if(type==="c") s=`<circle class="sh ${f}" cx="${x}" cy="${y}" r="18"/>`;
+    else if(type==="s") s=`<rect class="sh ${f}" x="${x-18}" y="${y-18}" width="36" height="36"/>`;
+    else s=`<polygon class="sh ${f}" points="${x},${y-21} ${x+21},${y} ${x},${y+21} ${x-21},${y}"/>`;
+    if(p==="U"||!p) s+=`<text class="q" x="${x}" y="${y}">?</text>`;return s};
+  const L=t.L;let h=`<line class="ln" x1="168" y1="30" x2="272" y2="30"/><line class="ln" x1="220" y1="30" x2="220" y2="100"/>`;
+  if(kids.length>1) h+=`<line class="ln" x1="${x0}" y1="100" x2="${x0+(kids.length-1)*kw}" y2="100"/>`;
+  kids.forEach((k,i)=>{const x=x0+i*kw;h+=`<line class="ln" x1="${x}" y1="100" x2="${x}" y2="119"/>`});
+  h+=shape(150,30,"c",ph.mom)+shape(290,30,"s",ph.dad);
+  h+=`<text class="t" x="150" y="64">Mother</text><text class="t" x="290" y="64">Father</text>`;
+  kids.forEach((k,i)=>{const x=x0+i*kw;h+=shape(x,140,"d",k.p)+`<text class="t" x="${x}" y="178" ${k.me?'style="font-weight:700"':""}>${k.k}</text>`});
+  if(showG&&R.ok){h+=`<text class="g" x="150" y="84">${setStr(R.mom,L).replace("unknown","?")}</text><text class="g" x="290" y="84">${setStr(R.dad,L).replace("unknown","?")}</text>`;
+    h+=`<text class="g" x="${x0}" y="198">${setStr(R.me,L)}</text>`}
+  return `<svg viewBox="0 0 ${W} 210" role="img" aria-label="Family tree for ${t.name}. Shaded shapes show the recessive trait; question marks are unknown.">${h}</svg>`;
+}
+function renderFamily(){
+  const practice=S.fam.mode==="practice";
+  $("famMine").setAttribute("aria-pressed",!practice);$("famPractice").setAttribute("aria-pressed",practice);
+  $("famModeNote").textContent=practice?"The practice family is Sam (you), Sam's mother, father, and one sibling. Their traits are already filled in. Work out Sam's genotypes.":"Use your biological parents and full siblings if you can. If you don't know them, or would rather not use your own family, switch to the practice family. Either choice is fine.";
+  $("sibRow").hidden=practice; $("sibN").value=String(S.fam.nSib);
+  const host=$("traits");host.innerHTML="";
+  TRAITS.forEach((t,ti)=>{
+    const ph=famData(t.id),L=t.L,l=L.toLowerCase(),akey=S.fam.mode+":"+t.id,ans=S.fam.ans[akey]||{};
+    const people=[["me","You"+(practice?" (Sam)":"")],["mom","Mother"],["dad","Father"],...ph.sibs.map((s,i)=>["s"+i,"Sibling "+(i+1)])];
+    const opt=(v,cur,allowU)=>`<option value="" ${!cur?"selected":""} disabled>Choose…</option><option value="D" ${cur==="D"?"selected":""}>${t.dom.split(" (")[0]} (dominant)</option><option value="R" ${cur==="R"?"selected":""}>${t.rec.split(" (")[0]} (recessive)</option>${allowU?`<option value="U" ${cur==="U"?"selected":""}>Don't know</option>`:""}`;
+    const val=k=>k==="me"?ph.me:k==="mom"?ph.mom:k==="dad"?ph.dad:ph.sibs[+k.slice(1)];
+    const d=document.createElement("div");d.className="panel trait";
+    d.innerHTML=`<div class="row" style="justify-content:space-between"><h3>Trait ${ti+1} · ${t.name}</h3><span class="mono">${L} = ${t.dom.split(" (")[0].toLowerCase()} · ${l} = ${t.rec.split(" (")[0].toLowerCase()}</span></div>
+     <div class="grid2"><div class="prose"><p><strong>Dominant (${L}):</strong> ${t.dom}<br><strong>Recessive (${l}${l}):</strong> ${t.rec}</p><p><strong>How to check:</strong> ${t.how}</p></div>
+     <div class="callout"><strong>Reality check.</strong> ${t.real}</div></div>
+     <div class="famgrid">${people.map(([k,lab])=>`<label>${lab}<select data-t="${t.id}" data-p="${k}" ${practice?"disabled":""}>${opt(k,val(k),k!=="me")}</select></label>`).join("")}</div>
+     <div class="grid2"><div class="ped" id="ped-${t.id}"></div>
+     <div class="stack" id="fq-${t.id}"></div></div>`;
+    host.appendChild(d);
+    d.querySelectorAll("select[data-p]").forEach(s=>s.addEventListener("change",()=>{
+      const m=S.fam.mine[t.id]=S.fam.mine[t.id]||{sibs:[]};const k=s.dataset.p;
+      if(k[0]==="s")m.sibs[+k.slice(1)]=s.value;else m[k]=s.value;
+      delete S.fam.ans[akey];save();renderFamily();
+      const again=document.querySelector(`select[data-t="${t.id}"][data-p="${k}"]`);if(again)again.focus()}));
+    const q=$("fq-"+t.id), R=analyze(ph);
+    $("ped-"+t.id).innerHTML=pedigree(t,ph,R,!!ans.checked);
+    if(!ph.me){q.innerHTML=`<div class="fb hint">Choose your own phenotype to continue.</div>`;return}
+    if(!R.ok){q.innerHTML=`<div class="fb hint">${explain(t,ph,R)}</div>`;return}
+    const sel=(name,label,opts,cur)=>`<label class="stack" style="gap:4px"><span>${label}</span><select data-a="${name}"><option value="" ${cur===undefined||cur===""?"selected":""} disabled>Choose…</option>${opts.map(o=>`<option value="${o[0]}" ${cur===o[0]?"selected":""}>${o[1]}</option>`).join("")}</select></label>`;
+    q.innerHTML=sel("g","What is your genotype?",[["2",`${L}${L}`],["1",`${L}${l}`],["0",`${l}${l}`],["21",`${L}${L} or ${L}${l} (can't tell)`]],ans.g)+
+      sel("fm","Which allele did you get from your mother?",[["1",L],["0",l],["?","Can't tell"]],ans.fm)+
+      sel("fd","Which allele did you get from your father?",[["1",L],["0",l],["?","Can't tell"]],ans.fd)+
+      `<div class="row"><button class="primary" data-chk>Check</button></div><div class="fbs" data-fb aria-live="polite"></div>`;
+    q.querySelectorAll("select[data-a]").forEach(s=>s.addEventListener("change",()=>{const a=S.fam.ans[akey]=S.fam.ans[akey]||{};a[s.dataset.a]=s.value;a.checked=false;save()}));
+    const run=()=>{const a=S.fam.ans[akey]=S.fam.ans[akey]||{};const want={g:meAnswer(R),fm:alAnswer(R.fm),fd:alAnswer(R.fd)};const out=[];
+      if(!a.g||!a.fm||!a.fd){out.push(["bad","Answer all three questions."]);q.querySelector("[data-fb]").innerHTML=fbHTML(out);return}
+      const okG=a.g===want.g,okM=a.fm===want.fm,okD=a.fd===want.fd;
+      if(okG&&okM&&okD) out.push(["good","All three are right."]);
+      else{
+        if(!okG) out.push(["bad",want.g==="21"?"Your genotype: think about whether anything in your family rules out one of the possibilities.":a.g==="21"?"Your genotype: look again. Something in your family pins down your second allele.":"Your genotype isn't right yet. Start from your own phenotype."]);
+        if(!okM) out.push(["bad",want.fm==="?"?"From your mother: could she have given you either allele, depending on your genotype?":"From your mother: look at her phenotype, or at what your own genotype requires."]);
+        if(!okD) out.push(["bad",want.fd==="?"?"From your father: could he have given you either allele, depending on your genotype?":"From your father: look at his phenotype, or at what your own genotype requires."]);
+      }
+      a.checked=true;a.ok=okG&&okM&&okD;a.tries=(a.tries||0)+1;save();
+      if(a.ok||a.tries>=2) out.push(["hint",explain(t,ph,R)]);
+      q.querySelector("[data-fb]").innerHTML=fbHTML(out);
+      $("ped-"+t.id).innerHTML=pedigree(t,ph,R,a.ok||a.tries>=2);};
+    q.querySelector("[data-chk]").addEventListener("click",run);
+    if(ans.checked) run();
+  });
+}
+$("famMine").addEventListener("click",()=>{S.fam.mode="mine";save();renderFamily()});
+$("famPractice").addEventListener("click",()=>{S.fam.mode="practice";save();renderFamily()});
+$("sibN").addEventListener("change",e=>{S.fam.nSib=+e.target.value;Object.keys(S.fam.ans).forEach(k=>{if(k.startsWith("mine:"))delete S.fam.ans[k]});save();renderFamily()});
+
+/* =====================================================
+   Answer sheet
+   ===================================================== */
+const SAQ=[["q11","1.1"],["q12","1.2"],["q13","1.3"],["q21","2.1"],["q31","3.1"],["q32","3.2"],["q41","4.1"],["q42","4.2"],["q51","5.1"],["q52","5.2"],["q53","5.3"]];
+function qText(k){const el=document.querySelector(`#lbl-${k}`);return el?el.parentElement.querySelector("p").textContent.trim():""}
+function chiLines(st,label){
+  if(!st||!st.result) return [`${label}: chi-square not checked yet`];
+  const v=st.v;return [`${label}: student entries χ² = ${v.chi||"—"}, df = ${v.df||"—"}, critical value = ${v.crit||"—"}, conclusion = ${st.dec==="fit"?"data fit expected ratio":st.dec==="nofit"?"data do not fit expected ratio":"—"}`,
+    `  (computed χ² = ${fmt(st.result.chi,3)}, df = ${st.result.df}; all entries correct: ${st.ok?"yes":"no"})`];
+}
+const yn=b=>b?"correct":"not yet correct";
+function renderSheet(){
+  const L=[],miss=[];
+  L.push("GENERAL BIOLOGY · LAB 14 · GENETICS (VIRTUAL)");
+  L.push(`Name: ${S.name||"—"}`);if(S.partners)L.push(`Partners: ${S.partners}`);L.push("");
+  const {c,n}=coinCounts();
+  L.push("PART 1 · COINS AND CHI-SQUARE");
+  L.push(`Data source: ${S.coins.mode==="real"?"real coins":"virtual coins"} (${n} flips)`);
+  L.push("Table 1. Result | Expected | Observed");
+  CAT.forEach(r=>L.push(`  ${r.lab} | ${r.E} | ${n?c[r.k]:"—"}`));
+  chiLines(S.chi.c1,"Chi-square").forEach(x=>L.push(x));
+  if(S.big)L.push(`64,000-flip run: TT ${S.big.c[0]}, Tt ${S.big.c[1]}, tt ${S.big.c[2]}`);
+  if(S.cls)L.push(`Classmate simulation: ${S.cls.filter(v=>v>=5.991).length} of 30 had χ² ≥ 5.991`);
+  if(n!==64) miss.push("Part 1 flips");
+  L.push("");
+  L.push("PART 2 · ALBINISM");
+  [["aTom","Tom's genotype"],["aJill","Jill's genotype"],["aJess","Jessica's genotype"],["aJessG","Jessica's gametes"],["aTomG","Tom's gametes"]].forEach(([k,lab])=>L.push(`${lab}: ${S.fill[k]||"—"} (${yn(S.chk[k])})`));
+  L.push(`Punnett square (row A: ${(S.fill.aPun||[])[0]||"—"}, ${(S.fill.aPun||[])[1]||"—"}; row a: ${(S.fill.aPun||[])[2]||"—"}, ${(S.fill.aPun||[])[3]||"—"}) (${yn(S.chk.aPun)})`);
+  [["aGR","Genotypic ratio"],["aPR","Phenotypic ratio"],["aP1","Chance first child has albinism"],["aP2","Chance second child has albinism"]].forEach(([k,lab])=>{
+    const t=document.querySelector(`input[name="mc-${k}"][value="${S.mc[k]}"]`);L.push(`${lab}: ${t?t.nextElementSibling.textContent:"—"} (${yn(S.chk[k])})`)});
+  L.push("");
+  L.push("PART 3 · MYSTERY PEAS");
+  L.push(`Seed counts entered: yellow ${S.mono.cY||"—"}, green ${S.mono.cG||"—"} (${yn(S.chk.cnt)})`);
+  L.push(`Yellow ÷ green: ${S.fill.mRatio||"—"} (${yn(S.chk.mRatio)})`);
+  const cr=document.querySelector(`input[name="mc-mCross"][value="${S.mc.mCross}"]`);L.push(`Parent cross chosen: ${cr?cr.nextElementSibling.textContent:"—"} (${yn(S.chk.mCross)})`);
+  L.push(`Expected: yellow ${S.fill.eY||"—"}, green ${S.fill.eG||"—"} (${yn(S.chk.mExp)})`);
+  chiLines(S.chi.c2,"Chi-square").forEach(x=>L.push(x));
+  L.push("");
+  L.push("PART 4 · DIHYBRID PUNNETT SQUARE");
+  L.push(`Gametes: ${S.di.gam.join(", ")||"—"} (${yn(S.chk.dGam)}${S.di.gRevealed?", shown by the lab":""})`);
+  L.push(`16-box square: ${yn(S.chk.dGrid)}${S.di.cRevealed?" (some boxes filled in by the lab)":""}`);
+  L.push(`Phenotype sorting: ${yn(S.chk.dPaint)}`);
+  const dr=document.querySelector(`input[name="mc-dRatio"][value="${S.mc.dRatio}"]`);L.push(`Phenotypic ratio: ${dr?dr.nextElementSibling.textContent:"—"} (${yn(S.chk.dRatio)})`);
+  [["dF1","P(green, wrinkled)"],["dF2","P(yellow, wrinkled)"],["dF3","Expected green wrinkled of 160"]].forEach(([k,lab])=>L.push(`${lab}: ${S.fill[k]||"—"} (${yn(S.chk[k])})`));
+  L.push("");
+  L.push(`PART 5 · FAMILY TRAITS (${S.fam.mode==="practice"?"practice family":"own family"})`);
+  const P={D:"dominant",R:"recessive",U:"don't know","":"—"};
+  TRAITS.forEach(t=>{const ph=famData(t.id),a=S.fam.ans[S.fam.mode+":"+t.id]||{};const Lt=t.L,l=Lt.toLowerCase();
+    const gname={"2":Lt+Lt,"1":Lt+l,"0":l+l,"21":`${Lt}${Lt} or ${Lt}${l}`}[a.g]||"—",al={"1":Lt,"0":l,"?":"can't tell"};
+    L.push(`${t.name}: me ${P[ph.me||""]}, mother ${P[ph.mom]}, father ${P[ph.dad]}${ph.sibs.length?", siblings "+ph.sibs.map(s=>P[s]).join("/"):""}`);
+    const R=analyze(ph);
+    if(ph.me&&!R.ok)L.push(`  Family does not fit the one-gene model.`);
+    else L.push(`  My genotype: ${gname}; from mother: ${al[a.fm]||"—"}; from father: ${al[a.fd]||"—"} (${a.checked?(a.ok?"correct":"not yet correct"):"not checked"})`);
+  });
+  L.push("");
+  L.push("SHORT-ANSWER QUESTIONS");
+  SAQ.forEach(([k,num])=>{const v=(S.sa[k]||"").trim();if(!v)miss.push("Question "+num);L.push(`${num}. ${qText(k)}`);L.push(v||"(no answer)");L.push("")});
+  $("sheet").value=L.join("\n");
+  $("missing").innerHTML=miss.length?`<span class="fb bad" style="display:inline-block">Still missing: ${miss.join(", ")}</span>`:`<span class="fb good" style="display:inline-block">Everything is filled in.</span>`;
+}
+$("copyBtn").addEventListener("click",()=>{const t=$("sheet");
+  const done=()=>{$("copyMsg").textContent="Copied. Paste it into the assignment."};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t.value).then(done,()=>{t.select();try{document.execCommand("copy")?done():$("copyMsg").textContent="Select the text and copy it manually."}catch(e){$("copyMsg").textContent="Select the text and copy it manually."}})}
+  else{t.select();try{document.execCommand("copy")?done():$("copyMsg").textContent="Select the text and copy it manually."}catch(e){$("copyMsg").textContent="Select the text and copy it manually."}}});
+
+/* ---------- accessibility state synchronizer ---------- */
+const stateObserver=new MutationObserver(records=>{
+ for(const r of records){const el=r.target;if(!(el instanceof HTMLElement)||!el.matches('input'))continue;
+   if(el.classList.contains('no'))el.setAttribute('aria-invalid','true');
+   else el.removeAttribute('aria-invalid');
+ }
+});
+stateObserver.observe(document.body,{subtree:true,attributes:true,attributeFilter:['class']});
+/* ---------- init ---------- */
+setMode(S.coins.mode||"virtual");
+renderBig();renderClass();drawTray();
+if(S.chk.cnt!==undefined&&(S.mono.cY||S.mono.cG)) checkCount(true); else renderMonoGate();
+renderFamily();
+route();
+})();
+</script>
+</body>
+</html>
+
+</body></html>
