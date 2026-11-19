@@ -1,0 +1,1331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lab 13 Virtual Lab: DNA Extraction and Fingerprinting</title>
+<style>
+:root{
+  --bg:#f5f7fa; --surface:#ffffff; --surface-2:#eef2f7; --ink:#1b2330; --muted:#4a5568;
+  --line:#c9d2de; --accent:#0a5f6e; --accent-ink:#ffffff; --accent-soft:#dff1f3;
+  --ok:#17692c; --ok-soft:#e3f4e7; --bad:#a3221a; --bad-soft:#fbe7e5; --warn:#7a4b00; --warn-soft:#fff3d6;
+  --focus:#c25400; --gel:#151a33; --gel-edge:#2b3360; --band:#ffd27a; --buffer:#d7ecf7;
+  --radius:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#11161d; --surface:#1a212b; --surface-2:#232c38; --ink:#e8edf3; --muted:#b4bfcc;
+    --line:#3a4656; --accent:#5cc4d3; --accent-ink:#0b1a1e; --accent-soft:#163238;
+    --ok:#7fd893; --ok-soft:#173222; --bad:#ff9b92; --bad-soft:#3a1c1a; --warn:#ffd27a; --warn-soft:#3a2e12;
+    --focus:#ffb35c; --buffer:#27445a;
+  }
+}
+:root[data-theme="dark"]{
+    --bg:#11161d; --surface:#1a212b; --surface-2:#232c38; --ink:#e8edf3; --muted:#b4bfcc;
+    --line:#3a4656; --accent:#5cc4d3; --accent-ink:#0b1a1e; --accent-soft:#163238;
+    --ok:#7fd893; --ok-soft:#173222; --bad:#ff9b92; --bad-soft:#3a1c1a; --warn:#ffd27a; --warn-soft:#3a2e12;
+    --focus:#ffb35c; --buffer:#27445a;
+}
+*{box-sizing:border-box}
+html{font-size:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.55;font-size:1.0625rem}
+a{color:var(--accent)}
+.skip{position:absolute;left:-999px;top:0;background:var(--accent);color:var(--accent-ink);padding:.6rem 1rem;z-index:100;border-radius:0 0 8px 0}
+.skip:focus{left:0}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+header.top{background:var(--accent);color:var(--accent-ink);padding:1rem 16px}
+header.top .wrap{max-width:1180px;margin:0 auto;display:flex;flex-wrap:wrap;gap:.5rem 1.5rem;align-items:baseline;justify-content:space-between}
+header.top h1{margin:0;font-size:1.45rem;line-height:1.25}
+header.top p{margin:0;font-size:.95rem;opacity:.95}
+.layout{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:250px 1fr;gap:1.5rem;padding:1.25rem 16px 3rem}
+@media (max-width:860px){.layout{grid-template-columns:1fr}}
+nav.toc{position:sticky;top:1rem;align-self:start;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:.75rem}
+@media (max-width:860px){nav.toc{position:static}}
+nav.toc h2{font-size:.95rem;margin:.2rem .4rem .5rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+nav.toc ol{list-style:none;margin:0;padding:0}
+nav.toc button{width:100%;text-align:left;background:none;border:0;color:var(--ink);font:inherit;font-size:.97rem;padding:.5rem .6rem;border-radius:8px;cursor:pointer;display:flex;gap:.5rem;align-items:flex-start;min-height:44px}
+nav.toc button:hover{background:var(--surface-2)}
+nav.toc button[aria-current="page"]{background:var(--accent-soft);font-weight:650;box-shadow:inset 3px 0 0 var(--accent)}
+nav.toc .num{flex:0 0 1.6rem;font-variant-numeric:tabular-nums;color:var(--muted)}
+nav.toc .done{margin-left:auto;color:var(--ok);font-weight:700}
+main section{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:1.25rem 1.4rem 1.5rem}
+main h2{font-size:1.5rem;margin:.1rem 0 .6rem;line-height:1.25}
+main h3{font-size:1.18rem;margin:1.4rem 0 .5rem}
+main h4{font-size:1.02rem;margin:1rem 0 .35rem}
+p{margin:.55rem 0}
+.lede{font-size:1.08rem;color:var(--muted)}
+.card{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius);padding:1rem 1.1rem;margin:1rem 0}
+.manual{border-left:4px solid var(--accent);background:var(--accent-soft);padding:.6rem .9rem;border-radius:0 8px 8px 0;margin:.75rem 0}
+.manual .tag{display:block;font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--accent)}
+.scenario{border:2px dashed var(--line);border-radius:var(--radius);padding:.9rem 1.1rem;margin:1rem 0}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1.25rem}
+@media (max-width:980px){.grid2{grid-template-columns:1fr}}
+.btn{font:inherit;font-size:1rem;border:2px solid var(--accent);background:var(--accent);color:var(--accent-ink);padding:.55rem 1rem;border-radius:8px;cursor:pointer;min-height:44px;font-weight:600}
+.btn:hover{filter:brightness(1.08)}
+.btn.secondary{background:var(--surface);color:var(--accent)}
+.btn:disabled{opacity:.5;cursor:not-allowed;filter:none}
+.btn-row{display:flex;flex-wrap:wrap;gap:.6rem;margin:.75rem 0}
+.choice-list{display:flex;flex-direction:column;gap:.55rem;margin:.6rem 0}
+.choice-list .btn{text-align:left;background:var(--surface);color:var(--ink);border-color:var(--line);font-weight:500}
+.choice-list .btn:hover{border-color:var(--accent)}
+.choice-list .btn.picked{border-color:var(--ok);background:var(--ok-soft)}
+fieldset.mcq{border:1px solid var(--line);border-radius:var(--radius);padding:.8rem 1rem 1rem;margin:1rem 0;background:var(--surface)}
+fieldset.mcq legend{font-weight:650;padding:0 .3rem;max-width:100%}
+.opt{display:flex;gap:.6rem;align-items:flex-start;padding:.45rem .5rem;border-radius:8px;cursor:pointer;min-height:44px}
+.opt:hover{background:var(--surface-2)}
+.opt input{margin-top:.3rem;width:1.15rem;height:1.15rem;flex:0 0 auto;accent-color:var(--accent)}
+.fb{margin-top:.6rem;border-radius:8px}
+.fb:empty{display:none}
+.fb.good,.note.good{background:var(--ok-soft);color:var(--ink);border-left:4px solid var(--ok);padding:.6rem .8rem}
+.fb.bad,.note.bad{background:var(--bad-soft);color:var(--ink);border-left:4px solid var(--bad);padding:.6rem .8rem}
+.fb.warn,.note.warn{background:var(--warn-soft);color:var(--ink);border-left:4px solid var(--warn);padding:.6rem .8rem}
+.note{border-radius:8px;margin:.7rem 0}
+.fb.good strong{color:var(--ok)} .fb.bad strong{color:var(--bad)} .fb.warn strong{color:var(--warn)}
+.figure{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius);padding:.6rem}
+.figure svg,.figure canvas{display:block;width:100%;height:auto}
+.caption{font-size:.95rem;color:var(--muted);margin:.4rem .2rem 0}
+.progress{height:14px;border-radius:7px;background:var(--surface-2);border:1px solid var(--line);overflow:hidden;margin:.5rem 0}
+.progress>span{display:block;height:100%;background:var(--accent);width:0;transition:width .25s}
+.stepper{display:flex;gap:.35rem;flex-wrap:wrap;margin:.4rem 0 1rem;padding:0;list-style:none}
+.stepper li{width:26px;height:8px;border-radius:4px;background:var(--line)}
+.stepper li.done{background:var(--accent)}
+.stepper li.now{background:var(--focus)}
+.pager{display:flex;justify-content:space-between;gap:.6rem;flex-wrap:wrap;margin-top:1.75rem;border-top:1px solid var(--line);padding-top:1rem}
+table{border-collapse:collapse;width:100%;font-size:.97rem;margin:.6rem 0}
+th,td{border:1px solid var(--line);padding:.4rem .55rem;text-align:left;vertical-align:top}
+th{background:var(--surface-2)}
+.status-line{font-size:.97rem;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:.5rem .7rem;margin:.6rem 0}
+label.field{display:block;font-weight:600;margin:.8rem 0 .3rem}
+input[type=range]{width:100%;max-width:420px;accent-color:var(--accent);min-height:32px}
+select,input[type=text],textarea{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--muted);border-radius:8px;padding:.45rem .6rem;min-height:44px}
+textarea{width:100%;min-height:6rem;resize:vertical}
+details{margin:.8rem 0;border:1px solid var(--line);border-radius:8px;padding:.4rem .8rem;background:var(--surface)}
+details summary{cursor:pointer;font-weight:600;min-height:32px;padding:.2rem 0}
+.band{cursor:pointer}
+.band:focus{outline:none}
+.band:focus .hit,.band:hover .hit{stroke:var(--focus);stroke-width:2.5;fill:rgba(255,179,92,.12)}
+.legend{display:flex;flex-wrap:wrap;gap:.4rem 1rem;font-size:.92rem;margin:.4rem 0}
+.legend span{display:inline-flex;align-items:center;gap:.35rem}
+.sw{display:inline-block;width:14px;height:14px;border-radius:3px;border:1px solid var(--muted)}
+.pcr-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin:.8rem 0}
+@media (max-width:600px){.pcr-steps{grid-template-columns:1fr}}
+.pcr-steps div{border:2px solid var(--line);border-radius:8px;padding:.6rem;background:var(--surface)}
+.pcr-steps div.active{border-color:var(--focus);background:var(--warn-soft)}
+.big-num{font-size:1.6rem;font-weight:700;font-variant-numeric:tabular-nums}
+.meters{display:grid;gap:.4rem;margin:.6rem 0}
+.meter-row{display:grid;grid-template-columns:9.5rem 1fr 3.5rem;gap:.5rem;align-items:center;font-size:.95rem}
+.meter-row .bar{height:12px;border-radius:6px;background:var(--surface-2);border:1px solid var(--line);overflow:hidden}
+.meter-row .bar span{display:block;height:100%}
+.counter{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap}
+.counter output{min-width:2.5rem;text-align:center;font-weight:700;font-size:1.15rem}
+.pill{display:inline-block;font-size:.8rem;font-weight:700;padding:.1rem .5rem;border-radius:999px;background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent)}
+.kbd{font-family:ui-monospace,Menlo,Consolas,monospace;background:var(--surface-2);border:1px solid var(--line);border-radius:4px;padding:0 .3rem;font-size:.9em}
+.theme-toggle{background:transparent;color:var(--accent-ink);border:2px solid currentColor;border-radius:8px;font:inherit;font-size:.9rem;padding:.3rem .7rem;cursor:pointer;min-height:36px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{animation:spin .6s linear infinite;transform-origin:200px 130px;transform-box:view-box}
+@keyframes rise{0%{transform:translateY(0);opacity:.9}100%{transform:translateY(-26px);opacity:0}}
+.bub{animation:rise 1.2s ease-in infinite}
+@keyframes drip{0%{transform:translateY(0);opacity:1}100%{transform:translateY(40px);opacity:0}}
+.drip{animation:drip .7s linear infinite}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+}
+@media print{
+  nav.toc,header.top .theme-toggle,.pager,.no-print,.skip{display:none!important}
+  .layout{display:block}
+  body{background:#fff;color:#000}
+  main section{border:0}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to lab content</a>
+<header class="top">
+  <div class="wrap">
+    <div>
+      <h1>Lab 13 Virtual Lab: DNA Extraction and Fingerprinting</h1>
+      <p>General Biology · Interactive simulation</p>
+    </div>
+    <button type="button" class="theme-toggle" id="themeToggle" aria-pressed="false">Dark mode</button>
+  </div>
+</header>
+
+<div id="sr-announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+<div class="layout">
+<nav class="toc" aria-label="Lab sections">
+  <h2 id="tocHead">Lab sections</h2>
+  <ol id="tocList" aria-labelledby="tocHead"></ol>
+</nav>
+
+<main id="main" tabindex="-1">
+
+<!-- ============ 0 OVERVIEW ============ -->
+<section id="s-overview" data-title="Overview" aria-labelledby="h-overview">
+  <h2 id="h-overview" tabindex="-1">Overview</h2>
+  <p class="lede">In this virtual lab you will pull DNA out of fruit cells, learn how DNA fingerprints are made, load and run an agarose gel, and use your gel to solve two cases: a crime scene and a paternity test.</p>
+
+  <h3>Background</h3>
+  <p>Deoxyribonucleic acid (DNA) is a double-stranded helix built from nucleotides. Each nucleotide has a nitrogenous base (adenine, thymine, guanine, or cytosine), the sugar deoxyribose, and a phosphate group. Phosphodiester bonds link the phosphate of one nucleotide to the sugar of the next, forming the <strong>sugar–phosphate backbone</strong>. Hydrogen bonds between A–T and G–C hold the two strands together.</p>
+  <p>Every phosphate in the backbone carries a <strong>negative charge</strong>. Keep that in mind: it explains why salt helps us extract DNA and why DNA moves through a gel.</p>
+  <p>Cells protect their DNA. Eukaryotic DNA sits inside a membrane-bound nucleus, and plant cells add a tough cell wall. To get DNA out, we break those barriers with physical and chemical means. To examine the DNA, we use <strong>gel electrophoresis</strong>, which separates DNA fragments by size.</p>
+
+  <h3>Learning goals</h3>
+  <ul>
+    <li>Explain the purpose of each step in a DNA extraction (smashing, soap, salt, filtering, cold ethanol, centrifuging).</li>
+    <li>Describe what PCR does and why it is needed for crime-scene samples and COVID tests.</li>
+    <li>Explain what STRs and VNTRs are and why they make each person's DNA fingerprint different.</li>
+    <li>Explain why DNA moves toward the positive electrode and how an agarose gel separates fragments by size.</li>
+    <li>Use correct micropipette technique to load a gel.</li>
+    <li>Interpret DNA fingerprint gels for a crime scene and a paternity test.</li>
+  </ul>
+
+  <h3>How to use this virtual lab</h3>
+  <ul>
+    <li>Work through the sections in order using the list of lab sections or the <strong>Next</strong> buttons at the bottom of each page.</li>
+    <li>Each step asks you to <strong>do</strong> something and then explain <strong>why</strong>. You can keep trying until you get each question right, but your first-try score is recorded on the answer sheet.</li>
+    <li>Everything works with a keyboard: use <span class="kbd">Tab</span> to move, <span class="kbd">Enter</span> or <span class="kbd">Space</span> to press buttons, and arrow keys for radio buttons and sliders. Every picture has a text description, and every gel can be shown as a table.</li>
+    <li>Your typed answers save automatically in this browser. The simulations restart if you reload the page.</li>
+    <li>Procedure 2 (casting the gel) is done for you. Your gel is cast and waiting in Procedure 3.</li>
+  </ul>
+  <div class="pager"><span></span><button class="btn" data-goto="s-p1">Next: Procedure 1, DNA Extraction →</button></div>
+</section>
+
+<!-- ============ 1 EXTRACTION ============ -->
+<section id="s-p1" data-title="Procedure 1: DNA Extraction" aria-labelledby="h-p1" hidden>
+  <h2 id="h-p1" tabindex="-1">Procedure 1: DNA Extraction</h2>
+  <p class="lede">Follow the manual's steps on a virtual bench. After each action, answer the "why" question before you move on.</p>
+  <ol class="stepper" id="p1-stepper" aria-hidden="true"></ol>
+  <div class="grid2">
+    <div>
+      <div class="figure">
+        <div id="p1-scene"></div>
+        <p class="caption" id="p1-caption" aria-hidden="true"></p>
+      </div>
+    </div>
+    <div id="p1-step"></div>
+  </div>
+  <div class="pager"><button class="btn secondary" data-goto="s-overview">← Overview</button><button class="btn" data-goto="s-pcr">Next: PCR in Brief →</button></div>
+</section>
+
+<!-- ============ 2 PCR ============ -->
+<section id="s-pcr" data-title="PCR in Brief" aria-labelledby="h-pcr" hidden>
+  <h2 id="h-pcr" tabindex="-1">PCR in Brief: Making Millions of Copies</h2>
+  <p class="lede">A crime scene might leave only a few skin cells under a fingernail. A nasal swab might hold only a few virus particles. That isn't enough DNA to see. The <strong>polymerase chain reaction (PCR)</strong> fixes that by copying one chosen stretch of DNA over and over.</p>
+  <p>PCR uses a heat-stable DNA polymerase, free nucleotides, and two short <strong>primers</strong>. The primers are built to base-pair on either side of the region we want, so only the DNA <em>between</em> the primers is copied. Each cycle has three temperature steps, and each cycle <strong>doubles</strong> the number of copies.</p>
+  <div class="pcr-steps" id="pcr-steps">
+    <div data-k="0"><strong>1. Denature · 95 °C</strong><br>Heat separates the two DNA strands.</div>
+    <div data-k="1"><strong>2. Anneal · ~55–60 °C</strong><br>Primers base-pair to each single strand on either side of the target.</div>
+    <div data-k="2"><strong>3. Extend · 72 °C</strong><br>Polymerase builds a new strand starting at each primer.</div>
+  </div>
+  <div class="card">
+    <p style="margin-top:0">Start: <strong>10 copies</strong> of a target region from a few skin cells.</p>
+    <p>Cycles run: <span class="big-num" id="pcr-n">0</span> &nbsp;·&nbsp; Copies: <span class="big-num" id="pcr-copies">10</span></p>
+    <p id="pcr-msg" role="status" aria-live="polite">Press "Run 1 cycle" to watch the three steps.</p>
+    <div class="btn-row">
+      <button class="btn" id="pcr-one">Run 1 cycle</button>
+      <button class="btn secondary" id="pcr-ten">Run 10 cycles</button>
+      <button class="btn secondary" id="pcr-reset">Reset</button>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="card"><h3 style="margin-top:0">At a crime scene</h3><p>Forensic labs use PCR to copy the <strong>STR regions</strong> (next section) from tiny amounts of blood, skin, or saliva. The copies are then sorted by size, like in our gel, to make a DNA profile.</p></div>
+    <div class="card"><h3 style="margin-top:0">In a COVID test</h3><p>SARS-CoV-2 has an RNA genome, so the test first uses <strong>reverse transcriptase</strong> to copy the viral RNA into DNA (RT-PCR). PCR then copies a viral gene. A fluorescent probe glows more with each cycle, so the machine reads the result in real time. A positive sample crosses the glow threshold early, and a negative sample never does.</p></div>
+  </div>
+  <div id="pcr-quiz"></div>
+  <div class="pager"><button class="btn secondary" data-goto="s-p1">← Procedure 1</button><button class="btn" data-goto="s-str">Next: STRs and VNTRs →</button></div>
+</section>
+
+<!-- ============ 3 STR/VNTR ============ -->
+<section id="s-str" data-title="STRs and VNTRs" aria-labelledby="h-str" hidden>
+  <h2 id="h-str" tabindex="-1">STRs and VNTRs: What Makes a DNA Fingerprint</h2>
+  <p class="lede">About 99.9% of your DNA is identical to everyone else's. DNA fingerprinting focuses on the few places that vary a lot between people.</p>
+  <p>At many places on our chromosomes, a short DNA sequence repeats end-to-end, like <code>GATA GATA GATA GATA…</code>. Everyone has these <strong>tandem repeats</strong> in the same places, but the <strong>number of repeats</strong> differs from person to person.</p>
+  <table>
+    <caption class="sr-only">Comparison of STRs and VNTRs</caption>
+    <thead><tr><th scope="col"></th><th scope="col">STR (short tandem repeat)</th><th scope="col">VNTR (variable number tandem repeat)</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">Repeat unit</th><td>2–6 base pairs (e.g., GATA)</td><td>About 10–100 base pairs</td></tr>
+      <tr><th scope="row">Also called</th><td>Microsatellite</td><td>Minisatellite</td></tr>
+      <tr><th scope="row">Used today?</th><td>Yes. The FBI's CODIS database uses 20 core STR loci.</td><td>Mostly the older method; still common in teaching labs because the bands are far apart.</td></tr>
+    </tbody>
+  </table>
+  <p>You have <strong>two copies</strong> of each chromosome: one from your mother and one from your father. So at each repeat site (<strong>locus</strong>) you have two <strong>alleles</strong>, which may have different repeat numbers. When PCR primers sit on either side of the repeats, a longer allele gives a longer PCR product, and that shows up as a band in a different place on the gel.</p>
+
+  <h3>Try it: build one person's alleles</h3>
+  <div class="card">
+    <fieldset style="border:0;padding:0;margin:0">
+      <legend style="font-weight:650">Repeat type</legend>
+      <label class="opt" style="display:inline-flex"><input type="radio" name="strmode" value="str" checked> STR (4 bp "GATA" repeat)</label>
+      <label class="opt" style="display:inline-flex"><input type="radio" name="strmode" value="vntr"> VNTR (16 bp repeat)</label>
+    </fieldset>
+    <div class="grid2" style="margin-top:.4rem">
+      <div>
+        <p style="margin:.2rem 0;font-weight:650" id="lab-mat">Allele from mother (number of repeats)</p>
+        <div class="counter" role="group" aria-labelledby="lab-mat">
+          <button class="btn secondary" id="mat-minus" aria-label="Fewer repeats on mother's allele">−</button>
+          <output id="mat-n" aria-live="polite">8</output>
+          <button class="btn secondary" id="mat-plus" aria-label="More repeats on mother's allele">+</button>
+        </div>
+      </div>
+      <div>
+        <p style="margin:.2rem 0;font-weight:650" id="lab-pat">Allele from father (number of repeats)</p>
+        <div class="counter" role="group" aria-labelledby="lab-pat">
+          <button class="btn secondary" id="pat-minus" aria-label="Fewer repeats on father's allele">−</button>
+          <output id="pat-n" aria-live="polite">12</output>
+          <button class="btn secondary" id="pat-plus" aria-label="More repeats on father's allele">+</button>
+        </div>
+      </div>
+    </div>
+    <div class="figure" style="margin-top:.8rem"><div id="str-diagram"></div></div>
+    <div class="grid2" style="margin-top:.8rem;align-items:start">
+      <div class="figure"><div id="str-gel"></div></div>
+      <div><p id="str-readout" role="status" aria-live="polite"></p>
+      <p class="caption">Try making both alleles the same number. A person with two identical alleles (homozygous) shows <strong>one band</strong> that is about twice as bright.</p></div>
+    </div>
+  </div>
+  <p>One locus isn't enough, because many people share the same alleles at any single site. Labs test many loci. If each genotype is shared by roughly 1 in 10 people, then matching at 20 independent loci is shared by about 1 in 10<sup>20</sup>, which is far more people than have ever lived. That is why a full profile is so powerful.</p>
+  <div id="str-quiz"></div>
+  <div class="pager"><button class="btn secondary" data-goto="s-pcr">← PCR in Brief</button><button class="btn" data-goto="s-gel">Next: How a Gel Works →</button></div>
+</section>
+
+<!-- ============ 4 GEL CONCEPT ============ -->
+<section id="s-gel" data-title="How a Gel Works" aria-labelledby="h-gel" hidden>
+  <h2 id="h-gel" tabindex="-1">How Gel Electrophoresis Works</h2>
+  <p class="lede">Electrophoresis means "carrying with electricity." An electric field pulls DNA through a slab of agarose gel, and the gel sorts the DNA by size.</p>
+  <div class="grid2">
+    <div>
+      <h3 style="margin-top:0">Why does DNA move?</h3>
+      <p>Each phosphate in DNA's backbone is <strong>negatively charged</strong>. When the power supply is on, the negative electrode (cathode, <strong>black</strong>) pushes DNA away and the positive electrode (anode, <strong>red</strong>) pulls it in. Students remember it as <strong>"DNA runs to red."</strong> That is why the wells are placed at the black end.</p>
+      <h3>Why do fragments separate?</h3>
+      <p>Agarose is a seaweed sugar that forms a tangled mesh of fibers full of tiny pores, like a sponge. Small fragments slip through the pores easily and travel far. Large fragments keep snagging and travel only a short way.</p>
+      <p>A longer fragment has more charge, but it also has more mass, so every DNA molecule has about the <strong>same charge per unit of length</strong>. In open buffer, all DNA would move at the same speed. <strong>The gel mesh is what separates fragments by size.</strong></p>
+      <p>A more concentrated gel (for example 2%) has smaller pores. It separates small fragments better but nearly stops large ones.</p>
+    </div>
+    <div>
+      <div class="figure">
+        <canvas id="gel-canvas" width="440" height="460" role="img" aria-label="Side view of a gel lane"></canvas>
+        <div class="legend" aria-hidden="true">
+          <span><i class="sw" style="background:#f2b134"></i>Small (200 bp): short squiggle</span>
+          <span><i class="sw" style="background:#4cc3d9"></i>Medium (800 bp)</span>
+          <span><i class="sw" style="background:#e45d8a"></i>Large (3,000 bp): long squiggle</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">Electrophoresis simulator</h3>
+    <div class="btn-row">
+      <button class="btn" id="g-power" aria-pressed="false">Turn power ON</button>
+      <button class="btn secondary" id="g-reverse" aria-pressed="false">Swap the leads (reverse polarity)</button>
+      <button class="btn secondary" id="g-reset">Reset samples to wells</button>
+    </div>
+    <label class="field" for="g-conc">Agarose concentration: <span id="g-conc-val">1.0%</span></label>
+    <input type="range" id="g-conc" min="0.5" max="2" step="0.5" value="1" aria-valuetext="1.0 percent">
+    <label class="field" for="g-volt">Voltage: <span id="g-volt-val">100 V</span></label>
+    <input type="range" id="g-volt" min="50" max="150" step="25" value="100" aria-valuetext="100 volts">
+    <h4>Distance traveled (percent of gel length)</h4>
+    <div class="meters" id="g-meters"></div>
+    <p id="g-status" class="status-line" role="status" aria-live="polite">Power is off. All fragments are sitting in the well at the black (negative) end.</p>
+  </div>
+  <div id="gel-quiz"></div>
+  <div class="pager"><button class="btn secondary" data-goto="s-str">← STRs and VNTRs</button><button class="btn" data-goto="s-p3">Next: Procedure 3, Load the Gel →</button></div>
+</section>
+
+<!-- ============ 5 LOAD ============ -->
+<section id="s-p3" data-title="Procedure 3: Load the Gel" aria-labelledby="h-p3" hidden>
+  <h2 id="h-p3" tabindex="-1">Procedure 3: Loading the Agarose Gel</h2>
+  <div class="scenario">
+    <h3 style="margin-top:0">Case 1: The ATM crime scene</h3>
+    <p>A man was beaten to death at night as he left a bank ATM. An eyewitness and the bank camera both pointed to one man, but he has a brother who looks very much like him (they are not identical twins). The witness saw the victim scratch the attacker, and forensic experts recovered skin and blood from under the victim's fingernails. Blood was collected from both brothers, labeled <strong>Suspect X</strong> and <strong>Suspect Y</strong>.</p>
+    <p>The lab ran two PCR reactions, each with a different primer pair (locus 1 and locus 2), on the evidence and on each suspect. Your six tubes are <strong>Evidence-1, X-1, Y-1</strong> (locus 1) and <strong>Evidence-2, X-2, Y-2</strong> (locus 2).</p>
+  </div>
+  <div class="manual"><span class="tag">From the manual</span>First, practice using the pipette by loading your fruit-extracted DNA. Then load each tube into a separate well. Use a fresh pipette tip for each tube, and record which DNA went into which well.</div>
+  <p>Your instructor has already loaded a <strong>DNA ladder</strong> (fragments of known size: 100, 200, … 1,000 bp) in well 1 so you can measure your bands. Suggested plan: fruit DNA in well 8 and the six case samples in wells 2–7, but you may choose any empty well. Just make sure your notebook is correct.</p>
+  <div class="grid2">
+    <div>
+      <div class="figure"><div id="load-gel"></div><p class="caption" id="load-caption" aria-hidden="true"></p></div>
+      <h3>Lab notebook</h3>
+      <table id="notebook"><caption class="sr-only">Which sample is in each well</caption><thead><tr><th scope="col">Well</th><th scope="col">Sample</th></tr></thead><tbody></tbody></table>
+    </div>
+    <div>
+      <div class="status-line" id="pip-status" aria-live="off"></div>
+      <div id="load-panel"></div>
+      <div id="load-fb" class="fb" role="status" aria-live="polite"></div>
+      <div id="load-auto-wrap" class="no-print" hidden>
+        <label class="opt"><input type="checkbox" id="load-auto"> I've mastered the technique, so do the drawing, positioning, and dispensing steps for me</label>
+      </div>
+      <div class="btn-row"><button class="btn secondary" id="load-reset">Start loading over</button></div>
+    </div>
+  </div>
+  <div class="pager"><button class="btn secondary" data-goto="s-gel">← How a Gel Works</button><button class="btn" data-goto="s-p4">Next: Procedure 4, Run and Read →</button></div>
+</section>
+
+<!-- ============ 6 RUN ============ -->
+<section id="s-p4" data-title="Procedure 4: Run and Read the Gel" aria-labelledby="h-p4" hidden>
+  <h2 id="h-p4" tabindex="-1">Procedure 4: Electrophoresis and Interpreting the Gel</h2>
+  <div id="run-needload" class="note warn" hidden>
+    <p style="margin:.2rem 0"><strong>Your gel isn't fully loaded yet.</strong> Go back to Procedure 3 to finish, or have the simulator load it for you.</p>
+    <div class="btn-row"><button class="btn secondary" data-goto="s-p3">Go to Procedure 3</button><button class="btn" id="run-autoload">Load the gel for me</button></div>
+  </div>
+  <div class="grid2">
+    <div>
+      <div class="figure"><div id="run-box"></div><p class="caption" id="run-caption" aria-hidden="true"></p></div>
+    </div>
+    <div>
+      <h3 style="margin-top:0">Run the gel</h3>
+      <ol style="padding-left:1.2rem">
+        <li><button class="btn secondary" id="run-lid">Close the lid</button></li>
+        <li style="margin-top:.6rem"><span id="lead-q">Connect the leads to the power supply:</span>
+          <div class="choice-list" role="group" aria-labelledby="lead-q">
+            <button class="btn" id="lead-ok">Red to red (+), black to black (−), both on the same channel</button>
+            <button class="btn" id="lead-rev">Red lead to the black jack, black lead to the red jack</button>
+          </div></li>
+        <li><label class="field" for="run-volt" style="margin-top:.2rem">Set the voltage: <span id="run-volt-val">50 V</span></label>
+          <input type="range" id="run-volt" min="50" max="200" step="25" value="50" aria-valuetext="50 volts"></li>
+        <li style="margin-top:.6rem"><button class="btn" id="run-power" aria-pressed="false" disabled>Turn power ON</button></li>
+      </ol>
+      <p class="status-line">Run time: <strong id="run-time">0</strong> min · Dye front: <strong id="run-dye">0</strong>% of the gel</p>
+      <div id="run-fb" class="fb" role="status" aria-live="polite"></div>
+      <div class="btn-row">
+        <button class="btn" id="run-remove" disabled>Disconnect and remove the gel</button>
+        <button class="btn" id="run-stain" disabled>Stain the gel</button>
+        <button class="btn" id="run-view" disabled>View on the light box</button>
+      </div>
+    </div>
+  </div>
+  <div id="read-area" hidden>
+    <h3 id="h-read" tabindex="-1">Read your gel</h3>
+    <p>Select any band (click it, or Tab to it and press Enter) to measure it against the ladder. Lane labels come from your lab notebook.</p>
+    <div class="figure"><div id="read-gel"></div></div>
+    <p id="band-readout" class="status-line" role="status" aria-live="polite">Select a band to measure it.</p>
+    <div id="contam-note"></div>
+    <details><summary>Show the gel as a table</summary><div id="read-table"></div></details>
+    <div id="read-quiz"></div>
+  </div>
+  <div class="pager"><button class="btn secondary" data-goto="s-p3">← Procedure 3</button><button class="btn" data-goto="s-pat">Next: Case 2, Paternity Test →</button></div>
+</section>
+
+<!-- ============ 7 PATERNITY ============ -->
+<section id="s-pat" data-title="Case 2: Paternity Test" aria-labelledby="h-pat" hidden>
+  <h2 id="h-pat" tabindex="-1">Case 2: A Paternity Test</h2>
+  <div class="scenario">
+    <p style="margin-top:0">A mother wants to establish who the biological father of her child is. Two men, <strong>Alleged Father 1 (AF1)</strong> and <strong>Alleged Father 2 (AF2)</strong>, agree to be tested. DNA from all four people was amplified by PCR at three loci (A, B, and C) and run on gels.</p>
+  </div>
+  <h3>The rule for reading a paternity gel</h3>
+  <p>A child gets <strong>one allele from the mother and one from the father at every locus</strong>. So:</p>
+  <ol>
+    <li>Find the child's band that matches a mother's band. That is the <strong>maternal allele</strong>.</li>
+    <li>The child's other band is the <strong>paternal allele</strong>. It must come from the biological father.</li>
+    <li>A man who lacks the paternal allele is <strong>excluded</strong>. A man who has it at every locus <strong>can't be excluded</strong>.</li>
+  </ol>
+  <p>Select a band in the gels below to measure it. If the child or mother shows only one band, that person has two copies of the same allele (homozygous).</p>
+  <div id="pat-gels" style="display:flex;flex-wrap:wrap;gap:1rem"></div>
+  <p id="pat-readout" class="status-line" role="status" aria-live="polite">Select a band to measure it.</p>
+  <details><summary>Show the paternity gels as a table</summary><div id="pat-table"></div></details>
+  <div id="pat-quiz"></div>
+  <div class="pager"><button class="btn secondary" data-goto="s-p4">← Procedure 4</button><button class="btn" data-goto="s-ans">Next: Answer Sheet →</button></div>
+</section>
+
+<!-- ============ 8 ANSWERS ============ -->
+<section id="s-ans" data-title="Answer Sheet" aria-labelledby="h-ans" hidden>
+  <h2 id="h-ans" tabindex="-1">Answer Sheet</h2>
+  <p>Answer in complete sentences. Your answers save automatically in this browser. When you're done, download or print them and submit as your instructor directs.</p>
+  <label class="field" for="stu-name">Your first and last name</label>
+  <input type="text" id="stu-name" autocomplete="name" style="width:100%;max-width:420px">
+  <div id="ans-list"></div>
+  <h3>Simulation record</h3>
+  <div id="score-summary"></div>
+  <div class="btn-row no-print">
+    <button class="btn" id="ans-download">Download my answers (.txt)</button>
+    <button class="btn secondary" id="ans-copy">Copy answers to clipboard</button>
+    <button class="btn secondary" id="ans-print">Print</button>
+  </div>
+  <p id="ans-msg" role="status" aria-live="polite"></p>
+  <div class="pager"><button class="btn secondary" data-goto="s-pat">← Case 2</button><span></span></div>
+</section>
+
+</main>
+</div>
+
+<script>
+(function(){
+"use strict";
+/* ---------- utilities ---------- */
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
+const RM=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+const store={get(k,d){try{const v=localStorage.getItem('lab13v:'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},
+             set(k,v){try{localStorage.setItem('lab13v:'+k,JSON.stringify(v))}catch(e){}}};
+function announce(m){const r=$('#sr-announcer');r.textContent='';setTimeout(()=>{r.textContent=m},60);}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function el(tag,attrs,html){const e=document.createElement(tag);if(attrs)for(const k in attrs){if(k==='class')e.className=attrs[k];else e.setAttribute(k,attrs[k]);}if(html!=null)e.innerHTML=html;return e;}
+
+/* ---------- theme ---------- */
+(function(){const t=$('#themeToggle');const saved=store.get('theme',null);
+  const sysDark=matchMedia('(prefers-color-scheme: dark)').matches;
+  function apply(mode){document.documentElement.setAttribute('data-theme',mode);t.setAttribute('aria-pressed',mode==='dark'?'true':'false');t.textContent=mode==='dark'?'Light mode':'Dark mode';}
+  apply(saved||(sysDark?'dark':'light'));
+  t.addEventListener('click',()=>{const m=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';apply(m);store.set('theme',m);});
+})();
+
+/* ---------- scoring ---------- */
+const SECTION_NAMES={p1:'Procedure 1: DNA extraction',pcr:'PCR',str:'STRs and VNTRs',gel:'How a gel works',p3:'Procedure 3: gel loading technique',p4:'Procedure 4: crime scene gel',pat:'Case 2: paternity test'};
+const scores={};
+function record(sec,first){scores[sec]=scores[sec]||{n:0,first:0};scores[sec].n++;if(first)scores[sec].first++;renderScores();}
+const techLog=[];
+function renderScores(){
+  const box=$('#score-summary');if(!box)return;
+  const keys=Object.keys(SECTION_NAMES);
+  let h='<table><caption class="sr-only">First-try results for the simulation questions</caption><thead><tr><th scope="col">Section</th><th scope="col">Questions answered</th><th scope="col">Correct on first try</th></tr></thead><tbody>';
+  keys.forEach(k=>{const s=scores[k];h+=`<tr><td>${SECTION_NAMES[k]}</td><td>${s?s.n:0}</td><td>${s?s.first:0}</td></tr>`;});
+  h+='</tbody></table>';
+  if(techLog.length)h+='<p><strong>Technique notes:</strong></p><ul>'+techLog.map(t=>`<li>${esc(t)}</li>`).join('')+'</ul>';
+  box.innerHTML=h;
+}
+
+/* ---------- multiple-choice component ---------- */
+let QID=0;
+function mcq(container,q,sec,onCorrect){
+  const id='mcq'+(++QID);
+  const fs=el('fieldset',{class:'mcq'});
+  fs.innerHTML=`<legend>${q.q}</legend>`+q.options.map((o,i)=>`<label class="opt"><input type="radio" name="${id}" value="${i}"><span>${o.t}</span></label>`).join('')+
+    `<div class="btn-row" style="margin-bottom:0"><button type="button" class="btn check">Check answer</button></div><div class="fb" role="status" aria-live="polite"></div>`;
+  container.appendChild(fs);
+  let tries=0,done=false;
+  const fb=fs.querySelector('.fb'),btn=fs.querySelector('.check');
+  btn.addEventListener('click',()=>{
+    if(done)return;
+    const sel=fs.querySelector('input:checked');
+    if(!sel){fb.className='fb warn';fb.innerHTML='<strong>Choose an answer first.</strong>';return;}
+    const o=q.options[+sel.value];tries++;
+    if(o.ok){done=true;fb.className='fb good';fb.innerHTML=`<strong>Correct.</strong> ${o.fb||''}`;btn.disabled=true;btn.textContent='Answered';
+      record(sec,tries===1);if(onCorrect)onCorrect();}
+    else{fb.className='fb bad';fb.innerHTML=`<strong>Not quite.</strong> ${o.fb||''} Try again.`;}
+  });
+  return fs;
+}
+function mcqChain(container,qs,sec,onAll){
+  let i=0;function next(){if(i>=qs.length){onAll&&onAll();return;}const q=qs[i++];mcq(container,q,sec,next);}next();
+}
+
+/* ---------- navigation ---------- */
+const sections=$$('main section');
+const doneSet=new Set(store.get('done',[]));
+function markDone(id){if(!doneSet.has(id)){doneSet.add(id);store.set('done',[...doneSet]);buildToc();}}
+function buildToc(){
+  const ol=$('#tocList');const cur=sections.find(s=>!s.hidden);ol.innerHTML='';
+  sections.forEach((s,i)=>{const li=el('li');const b=el('button',{type:'button','data-goto':s.id});
+    b.innerHTML=`<span class="num">${i}.</span><span>${s.dataset.title}</span>`+(doneSet.has(s.id)?'<span class="done" aria-hidden="true">✓</span><span class="sr-only"> (completed)</span>':'');
+    if(cur===s)b.setAttribute('aria-current','page');li.appendChild(b);ol.appendChild(li);});
+}
+function go(id,focus=true){
+  sections.forEach(s=>s.hidden=(s.id!==id));buildToc();store.set('last',id);
+  const h=$('#'+id+' h2');if(focus&&h){h.focus();window.scrollTo({top:0,behavior:RM?'auto':'smooth'});}
+  if(id==='s-p4')runEnter();
+  if(id==='s-gel')gelSim.draw();
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-goto]');if(b){e.preventDefault();go(b.dataset.goto);}});
+
+/* ====================================================================
+   PROCEDURE 1 — DNA EXTRACTION
+   ==================================================================== */
+const FRUIT={strawberry:{name:'strawberry',color:'#d7263d',yield:1,label:'Strawberry'},
+             banana:{name:'banana',color:'#efd98a',yield:.55,label:'Banana'},
+             kiwi:{name:'kiwi',color:'#7fae2a',yield:.7,label:'Kiwi'}};
+const S={fruit:null,smash:0,water:false,soap:false,salt:false,knead:0,rack:false,funnel:false,filter:false,filtrate:0,ethanol:false,dna:false,spooled:false,spinning:false,spun:false,decanted:false,dissolved:false,dye:false};
+const STEPS=[
+ {stage:'bag',title:'Choose your fruit',manual:'1. Place a chosen piece of fruit in a Ziploc bag.',
+  prompt:'Pick a fruit to put in the bag.',
+  action:{type:'choice',options:[
+    {t:'Strawberry',ok:true,val:'strawberry'},{t:'Banana',ok:true,val:'banana'},{t:'Kiwi',ok:true,val:'kiwi'}]},
+  apply:(o)=>{S.fruit=o.val;},
+  observe:()=>`Your ${FRUIT[S.fruit].name} is sealed in the bag.`+(S.fruit==='strawberry'?' Good choice: strawberries are the classic fruit for this lab.':' Keep track of how much DNA you get compared with classmates who chose strawberries.'),
+  why:[{q:'Why are strawberries a favorite fruit for DNA extraction?',options:[
+    {t:'They are octoploid (8 copies of each chromosome) and their soft, ripe tissue breaks apart easily, so they release a lot of DNA.',ok:true,fb:'More chromosome copies per cell plus easy-to-break tissue means a bigger DNA yield. Remember this for answer-sheet question 4.'},
+    {t:'Strawberry cells have no cell walls.',ok:false,fb:'All plant cells, strawberries included, have cell walls. That is one reason we smash the fruit.'},
+    {t:'Strawberry DNA is a different kind of molecule from human DNA.',ok:false,fb:'DNA is the same molecule in every organism. Only the sequence of bases differs.'}]}]},
+ {stage:'bag',title:'Smash the fruit (3 minutes)',manual:'2. Smash/grind up the tissue using your fist and fingers for 3 minutes. Careful not to break the bag!',
+  prompt:'Press the Smash button until you reach 3 minutes. Each press is about 20 seconds of squishing.',
+  action:{type:'repeat',label:'Smash the bag',times:9,secs:20,key:'smash'},
+  observe:()=>'The fruit is now a lumpy pulp. Cell walls have been crushed and cells pulled apart.',
+  why:[{q:'Why do we smash the fruit first?',options:[
+    {t:'To physically break the cell walls and separate cells, so the extraction solution can reach every cell.',ok:true,fb:'Smashing is the mechanical (physical) part of breaking cells open.'},
+    {t:'To chop the DNA into small pieces so it will fit in the gel.',ok:false,fb:'We actually want long DNA strands for this extraction. Breaking DNA is a side effect, not the goal.'},
+    {t:'To kill bacteria on the fruit.',ok:false,fb:'Smashing does not sterilize anything. Its job is to break tissue apart.'}]}]},
+ {stage:'bag',title:'Add the extraction solution',manual:'3. Add roughly 10 ml water, 1 drop of soap, 1 pinch of salt to the bag.',
+  prompt:'Add all three ingredients to the bag, in any order.',
+  action:{type:'multi',items:[{t:'Add about 10 mL of water',key:'water'},{t:'Add 1 drop of dish soap',key:'soap'},{t:'Add 1 pinch of salt',key:'salt'}]},
+  observe:()=>'Water, soap bubbles, and salt crystals are mixed in with the fruit pulp.',
+  why:[{q:'What does the soap (detergent) do?',options:[
+    {t:'It dissolves the lipid (fat) layers of the cell membrane and the nuclear envelope, which releases the DNA.',ok:true,fb:'Membranes are phospholipid bilayers. Detergent breaks them up the same way it lifts grease off dishes. This is the chemical part of breaking the cells.'},
+    {t:'It breaks DNA down into single nucleotides.',ok:false,fb:'Soap does not break the bonds in DNA. If it did, there would be nothing to collect.'},
+    {t:'It makes the DNA turn white so we can see it.',ok:false,fb:'DNA looks white later because millions of strands clump together, not because of the soap.'}]},
+   {q:'Why do we add salt?',options:[
+    {t:'Positive sodium ions (Na⁺) neutralize DNA\'s negatively charged phosphate backbone, so DNA strands stop repelling each other and can clump together. Salt also helps pull proteins off the DNA.',ok:true,fb:'With its negative charges shielded, DNA can come together and precipitate when ethanol is added. Remember this for answer-sheet question 2.'},
+    {t:'To preserve the fruit so it doesn\'t spoil.',ok:false,fb:'Preservation isn\'t needed in a 30-minute lab. Think about DNA\'s charge.'},
+    {t:'Salt dissolves the cell wall.',ok:false,fb:'Cell walls are made of cellulose, which salt doesn\'t dissolve. Smashing breaks the walls.'}]}]},
+ {stage:'bag',title:'Knead again (2 minutes)',manual:'4. Knead/mush the tissue in the bag again for 2 minutes.',
+  prompt:'Press Knead until you reach 2 minutes. Each press is about 20 seconds.',
+  action:{type:'repeat',label:'Knead the bag',times:6,secs:20,key:'knead'},
+  observe:()=>'The mixture is now a smooth, soapy slurry.',
+  why:[{q:'Why knead again after adding the solution?',options:[
+    {t:'To mix the soap and salt through all the pulp, so every cell\'s membranes are exposed to detergent.',ok:true,fb:'Good mixing means more cells break open, which means more DNA.'},
+    {t:'To warm the solution to body temperature.',ok:false,fb:'Warming isn\'t the goal here. Think about where the soap needs to go.'},
+    {t:'To make the DNA molecules longer.',ok:false,fb:'Nothing in this procedure lengthens DNA.'}]}]},
+ {stage:'filter',title:'Assemble the filter',manual:'5. Assemble your filtration apparatus.',
+  prompt:'Build the filtration setup in the correct order. Choose the part that comes next.',
+  action:{type:'sequence',items:[
+    {t:'Line the funnel with a coffee filter (or cheesecloth)',key:'filter',why:'There is no funnel in place yet to hold the filter.'},
+    {t:'Stand a clean test tube in the rack',key:'rack',why:''},
+    {t:'Set the funnel in the mouth of the test tube',key:'funnel',why:'The funnel needs a test tube under it first, or the liquid has nowhere to go.'}],
+   order:['rack','funnel','filter']},
+  observe:()=>'Tube, funnel, and filter are ready.',
+  why:[]},
+ {stage:'filter',title:'Filter the mixture',manual:'6. Pour the tissue solution into the filtration apparatus and let it drip directly into your test tube.',
+  prompt:'Pour the slurry into the filter.',
+  action:{type:'button',label:'Pour the slurry into the filter',key:'pour'},
+  observe:()=>'A clear-ish, tinted liquid (the filtrate) has dripped into the tube. Pulp and seeds stay in the filter.',
+  why:[{q:'What does the filter do?',options:[
+    {t:'It catches solid cell debris (cell walls, pulp, seeds). The dissolved DNA passes through into the tube.',ok:true,fb:'The DNA is now dissolved in the liquid filtrate, which is what we keep.'},
+    {t:'It traps the DNA so we can scrape it off the filter.',ok:false,fb:'DNA is dissolved in the liquid at this point, so it passes through the filter.'},
+    {t:'It removes the salt and soap.',ok:false,fb:'Salt and soap are dissolved, so they pass through the filter too.'}]}]},
+ {stage:'tube',title:'Add cold ethanol',manual:'7. Slowly pour 5 ml cold ethanol into the tube. DON\'T MIX!',
+  prompt:'How will you add the 5 mL of ice-cold ethanol?',
+  action:{type:'choice',options:[
+    {t:'Pour it straight in quickly, then swirl to mix.',ok:false,fb:'Mixing blends the ethanol into the filtrate. The DNA spreads out instead of collecting in one visible layer.'},
+    {t:'Tilt the tube and slowly pour the ethanol down the side so it forms a layer on top.',ok:true,fb:'Ethanol is less dense than water, so poured gently it floats as a separate layer.'},
+    {t:'Use room-temperature ethanol, since it pours more easily.',ok:false,fb:'Cold ethanol works much better. Think about why when you answer the next question.'}]},
+  apply:()=>{S.ethanol=true;},
+  observe:()=>'A clear layer of ethanol now floats on top of the tinted filtrate.',
+  why:[{q:'Why does DNA appear where the ethanol meets the filtrate?',options:[
+    {t:'DNA is not soluble in ethanol, so it precipitates (comes out of solution) at the boundary.',ok:true,fb:'DNA dissolves in water because it is charged and polar. With salt shielding its charges, ethanol forces it out of solution. Remember this for answer-sheet question 3.'},
+    {t:'Ethanol reacts with DNA to make a new white molecule.',ok:false,fb:'No chemical reaction happens. The DNA simply stops being dissolved.'},
+    {t:'Ethanol dissolves the leftover cell walls.',ok:false,fb:'The cell walls were already filtered out.'}]},
+   {q:'Why must the ethanol be ice-cold?',options:[
+    {t:'Cold ethanol makes DNA even less soluble, and it slows enzymes (DNases) that would cut the DNA apart.',ok:true,fb:'You get more DNA, in longer strands.'},
+    {t:'Cold ethanol is denser, so it sinks below the filtrate.',ok:false,fb:'Ethanol floats on water whether it is warm or cold. That is why it forms a top layer.'},
+    {t:'It keeps the ethanol from catching fire.',ok:false,fb:'Ethanol is flammable at any temperature in lab conditions. Temperature here affects DNA, not fire safety.'}]}]},
+ {stage:'tube',title:'Watch for DNA',manual:'8. YES! What you see at the top is DNA (looks like snot with bubbles).',
+  prompt:'Let the tube sit undisturbed and watch the boundary between the layers.',
+  action:{type:'button',label:'Wait 1 minute and watch',key:'wait'},
+  apply:()=>{S.dna=true;},
+  observe:()=>S.fruit==='strawberry'?'Lots of white, stringy, snot-like DNA with tiny bubbles is rising into the ethanol layer.':`White, stringy DNA is rising into the ethanol, though less than a strawberry gives. ${FRUIT[S.fruit].label} cells have fewer chromosome copies.`,
+  why:[{q:'A single DNA molecule is far too thin to see. Why can you see this white material?',options:[
+    {t:'Millions of DNA strands from many cells have clumped together into visible threads.',ok:true,fb:'You are seeing a tangle of DNA from millions of cells, with some RNA and protein mixed in.'},
+    {t:'The ethanol magnifies the DNA like a lens.',ok:false,fb:'Ethanol doesn\'t magnify anything.'},
+    {t:'The salt stained the DNA white.',ok:false,fb:'Salt doesn\'t stain DNA. You are seeing clumped strands.'}]}]},
+ {stage:'tube',title:'Collect the DNA',manual:'9. Remove the DNA with forceps, a wooden popsicle stick, or metal probe.',
+  prompt:'Collect the DNA from the boundary layer.',
+  action:{type:'choice',options:[
+    {t:'Stir the whole tube hard with the stick.',ok:false,fb:'Stirring mixes the layers and breaks up the DNA.'},
+    {t:'Slowly twirl a wooden stick right at the boundary between the layers.',ok:true,fb:'The DNA winds onto the stick ("spooling").'}]},
+  apply:()=>{S.spooled=true;},
+  observe:()=>'A white blob of DNA is wound around the tip of the stick.',
+  why:[{q:'Why does the DNA wind around the stick?',options:[
+    {t:'DNA molecules are extremely long, thread-like polymers that tangle and wrap around the stick as it turns.',ok:true,fb:'Unstretched, the DNA in one human cell would be about 2 meters long.'},
+    {t:'The DNA is magnetic and the stick attracts it.',ok:false,fb:'DNA isn\'t magnetic, and neither is wood.'},
+    {t:'The stick absorbs the ethanol and the DNA comes with it.',ok:false,fb:'Absorption isn\'t what happens. Think about DNA\'s shape.'}]}]},
+ {stage:'micro',title:'Centrifuge the DNA',manual:'10. Transfer the DNA into a centrifuge tube with 0.5 ml of ethanol. Centrifuge the tube at 10,000 rpm for 2 minutes.',
+  prompt:'Your DNA is in a microcentrifuge tube with 0.5 mL ethanol. Set up the centrifuge.',
+  action:{type:'centrifuge'},
+  observe:()=>'A small white pellet of DNA is packed at the bottom tip of the tube.',
+  why:[{q:'What does centrifuging do to the DNA?',options:[
+    {t:'Spinning creates a strong force that pushes the denser, solid DNA to the bottom of the tube, forming a pellet.',ok:true,fb:'The pellet makes it easy to pour off the liquid without losing the DNA.'},
+    {t:'It separates the DNA double helix into two single strands.',ok:false,fb:'Separating the strands takes heat (as in PCR), not spinning.'},
+    {t:'It dries the DNA completely.',ok:false,fb:'The DNA is still sitting in ethanol, so it isn\'t dry.'}]}]},
+ {stage:'micro',title:'Decant the ethanol',manual:'11. Decant the ethanol (pour off the liquid portion) while not disturbing the pelleted DNA.',
+  prompt:'How will you remove the ethanol?',
+  action:{type:'choice',options:[
+    {t:'Gently tip the tube and pour off the liquid, keeping the pellet at the bottom.',ok:true,fb:'The pellet stays put.'},
+    {t:'Flick the tube upside down quickly to get every drop out.',ok:false,fb:'A quick flick can knock the pellet loose and you lose your DNA.'},
+    {t:'Pour off the pellet and keep the liquid.',ok:false,fb:'The DNA is the pellet, so you'+"'"+'d be throwing it away!'}]},
+  apply:()=>{S.decanted=true;},
+  observe:()=>'Only the white DNA pellet remains in the tube.',
+  why:[{q:'Why pour off the ethanol?',options:[
+    {t:'DNA won\'t dissolve in ethanol, so the ethanol (and leftover dissolved contaminants) must be removed before the DNA can redissolve in water.',ok:true,fb:'Leftover ethanol can also make samples float out of gel wells.'},
+    {t:'Ethanol is needed later, so we save it.',ok:false,fb:'The used ethanol is discarded.'},
+    {t:'To make the pellet bigger.',ok:false,fb:'Pouring off liquid doesn\'t add any DNA.'}]}]},
+ {stage:'micro',title:'Dissolve the DNA',manual:'13. Dissolve your DNA into 1 mL of distilled water. Invert the tube numerous times but do not shake (~30 minutes).',
+  prompt:'How will you dissolve the pellet?',
+  action:{type:'choice',options:[
+    {t:'Add 1 mL distilled water and shake or vortex hard so it dissolves fast.',ok:false,fb:'Vigorous shaking shears (snaps) long DNA molecules into small pieces.'},
+    {t:'Add 1 mL distilled water and boil it to speed things up.',ok:false,fb:'Boiling separates the strands and can damage the DNA.'},
+    {t:'Add 1 mL distilled water and gently invert the tube many times over about 30 minutes.',ok:true,fb:'Fast-forwarding 30 minutes… The pellet has dissolved.'}]},
+  apply:()=>{S.dissolved=true;},
+  observe:()=>'The pellet has dissolved into a clear, slightly thick solution.',
+  why:[{q:'Why invert gently instead of shaking?',options:[
+    {t:'Shaking creates forces that shear long DNA strands into small fragments.',ok:true,fb:'Gentle handling keeps the genomic DNA in long pieces.'},
+    {t:'Shaking would make the DNA evaporate.',ok:false,fb:'DNA doesn\'t evaporate.'},
+    {t:'Inverting is only a tradition; shaking works just as well.',ok:false,fb:'There is a real physical reason: long molecules are fragile.'}]}]},
+ {stage:'micro',title:'Add loading dye',manual:'14. Add 20 µl of loading dye to your sample.',
+  prompt:'Get your DNA ready to load on a gel.',
+  action:{type:'button',label:'Add 20 µL of loading dye',key:'dye'},
+  apply:()=>{S.dye=true;},
+  observe:()=>'Your DNA sample is now blue and ready to load in Procedure 3 as your practice sample.',
+  why:[{q:'What two jobs does loading dye do?',options:[
+    {t:'It stains the DNA so the bands will be visible after the run.',ok:false,fb:'Tracking dye doesn\'t bind DNA. That is why the gel is stained after the run.'},
+    {t:'It contains glycerol, which makes the sample dense enough to sink into the well, and its color lets you see the sample and track the run.',ok:true,fb:'The dye front moves just ahead of small DNA fragments, so you know when to stop the run.'},
+    {t:'It gives the DNA its negative charge so it can move.',ok:false,fb:'DNA is already negative because of its phosphate backbone.'}]}]}
+];
+let p1i=0;
+function bagSVG(){
+  const f=S.fruit&&FRUIT[S.fruit];const c=f?f.color:'#ccc';let g='';
+  g+=`<rect x="110" y="40" width="180" height="185" rx="16" fill="#f4f9ff" stroke="#5f6f86" stroke-width="3"/>`;
+  g+=`<rect x="110" y="40" width="180" height="16" rx="6" fill="#9fb6d6"/><line x1="114" y1="48" x2="286" y2="48" stroke="#5f6f86" stroke-width="2" stroke-dasharray="6 4"/>`;
+  if(S.water)g+=`<rect x="114" y="135" width="172" height="86" rx="12" fill="#bfe0f5" opacity=".85"/>`;
+  if(f){const sm=S.smash;
+    [[165,180,30],[230,178,28],[198,138,25]].forEach(([x,y,r])=>{if(sm<1)g+=`<circle cx="${x}" cy="${y}" r="${r*(1-.55*sm)}" fill="${c}" opacity="${1-.85*sm}" stroke="#00000033"/>`;
+      if(S.fruit==='strawberry'&&sm<.6){for(let k=0;k<5;k++)g+=`<ellipse cx="${x-12+k*6}" cy="${y-6+(k%2)*10}" rx="1.6" ry="2.4" fill="#f9e27a" opacity="${1-sm}"/>`;}});
+    if(sm>0)g+=`<path d="M135 205 Q150 ${190-30*sm} 200 ${195-25*sm} T265 205 Q250 220 200 220 T135 205Z" fill="${c}" opacity="${.35+.6*sm}"/>`;
+    if(S.knead>0)g+=`<rect x="118" y="${185-20*S.knead}" width="164" height="${34+20*S.knead}" rx="12" fill="${c}" opacity="${.25+.35*S.knead}"/>`;
+  }
+  if(S.soap){for(let k=0;k<9;k++){const x=128+k*18,y=128+((k*37)%14);g+=`<circle cx="${x}" cy="${y}" r="${4+(k%3)*2}" fill="#ffffff" stroke="#7aa6c9" opacity=".9"/>`;}}
+  if(S.salt){for(let k=0;k<14;k++){g+=`<rect x="${130+((k*53)%150)}" y="${150+((k*29)%60)}" width="3" height="3" fill="#ffffff" stroke="#8899aa" stroke-width=".5"/>`;}}
+  return g;
+}
+function tubePath(x,top,h,w){return `M${x} ${top} v${h} a${w/2} ${w/2} 0 0 0 ${w} 0 v-${h}`;}
+function filterSVG(){
+  const f=FRUIT[S.fruit]||FRUIT.strawberry;let g='';
+  if(S.rack)g+=`<rect x="120" y="170" width="160" height="14" fill="#8b6b4a"/><rect x="128" y="184" width="10" height="44" fill="#8b6b4a"/><rect x="262" y="184" width="10" height="44" fill="#8b6b4a"/>`;
+  if(S.rack){g+=`<defs><clipPath id="tclip"><path d="${tubePath(182,80,130,36)}"/></clipPath></defs>`;
+    if(S.filtrate>0){const lvl=210+18-(S.filtrate*90);g+=`<rect x="182" y="${lvl}" width="36" height="${228-lvl}" fill="${f.color}" opacity=".45" clip-path="url(#tclip)"/>`;}
+    g+=`<path d="${tubePath(182,80,130,36)}" fill="none" stroke="#5f6f86" stroke-width="3"/>`;}
+  if(S.funnel)g+=`<path d="M150 40 L250 40 L210 88 L210 110 L190 110 L190 88 Z" fill="#e9eef5" stroke="#5f6f86" stroke-width="3" opacity=".95"/>`;
+  if(S.filter)g+=`<path d="M158 44 L242 44 L204 86 L196 86 Z" fill="#fffaf0" stroke="#c9b48a" stroke-width="2"/>`;
+  if(S.filtrate>0&&S.filtrate<1)g+=`<circle class="drip" cx="200" cy="114" r="3.5" fill="${f.color}" opacity=".7"/>`;
+  if(S.filtrate>=1)g+=`<path d="M164 48 Q200 70 236 48 L204 82 L196 82Z" fill="${f.color}" opacity=".6"/>`;
+  return g;
+}
+function bigTubeSVG(){
+  const f=FRUIT[S.fruit]||FRUIT.strawberry;let g=`<defs><clipPath id="btclip"><path d="${tubePath(170,30,170,60)}"/></clipPath></defs>`;
+  g+=`<rect x="170" y="140" width="60" height="100" fill="${f.color}" opacity=".45" clip-path="url(#btclip)"/>`;
+  if(S.ethanol)g+=`<rect x="170" y="82" width="60" height="58" fill="#cfe9ff" opacity=".75" clip-path="url(#btclip)"/>`;
+  if(S.dna&&!S.spooled){const n=Math.round(3+5*f.yield);for(let k=0;k<n;k++){const x=176+k*(48/n);g+=`<path d="M${x} 140 q 6 -12 0 -22 q -6 -10 2 -20" fill="none" stroke="#ffffff" stroke-width="3.2" stroke-linecap="round"/><circle cx="${x+3}" cy="${112-k%3*6}" r="2" fill="#ffffff"/>`;}}
+  if(S.dna&&!S.spooled)g+=`<rect x="172" y="132" width="56" height="10" fill="#ffffff" opacity=".7" clip-path="url(#btclip)"/>`;
+  if(S.spooled){g+=`<rect x="196" y="10" width="8" height="128" rx="3" fill="#c49a6c" stroke="#7a5a35"/><ellipse cx="200" cy="128" rx="${10+8*f.yield}" ry="${9+6*f.yield}" fill="#ffffff" stroke="#c8d3df"/>`;}
+  g+=`<path d="${tubePath(170,30,170,60)}" fill="none" stroke="#5f6f86" stroke-width="3"/>`;
+  if(S.ethanol)g+=`<text x="245" y="112" font-size="12" fill="currentColor">ethanol</text><text x="245" y="185" font-size="12" fill="currentColor">filtrate</text>`;
+  return g;
+}
+function microSVG(){
+  let g='';
+  if(S.spinning){g+=`<g class="spin"><circle cx="200" cy="130" r="80" fill="#dfe6ee" stroke="#5f6f86" stroke-width="3"/><rect x="190" y="56" width="20" height="40" rx="5" fill="#ffffff" stroke="#5f6f86"/><rect x="190" y="164" width="20" height="40" rx="5" fill="#ffffff" stroke="#5f6f86"/></g><circle cx="200" cy="130" r="8" fill="#5f6f86"/>`;return g;}
+  const path='M180 40 h40 v110 l-14 50 h-12 l-14 -50 Z';
+  g+=`<defs><clipPath id="mclip"><path d="${path}"/></clipPath></defs>`;
+  g+=`<rect x="176" y="22" width="48" height="18" rx="4" fill="#e9eef5" stroke="#5f6f86" stroke-width="2"/>`;
+  if(S.dye)g+=`<rect x="170" y="80" width="60" height="130" fill="#3d5bd9" opacity=".75" clip-path="url(#mclip)"/>`;
+  else if(S.dissolved)g+=`<rect x="170" y="80" width="60" height="130" fill="#e8f3ff" opacity=".9" clip-path="url(#mclip)"/>`;
+  else if(!S.decanted)g+=`<rect x="170" y="90" width="60" height="120" fill="#cfe9ff" opacity=".8" clip-path="url(#mclip)"/>`;
+  if(S.spun&&!S.dissolved)g+=`<ellipse cx="200" cy="194" rx="8" ry="5" fill="#ffffff" stroke="#9fb0c2"/>`;
+  else if(!S.spun&&!S.dissolved)g+=`<path d="M192 120 q8 -10 16 0 q-8 10 -16 0" fill="#ffffff" stroke="#c8d3df"/>`;
+  g+=`<path d="${path}" fill="none" stroke="#5f6f86" stroke-width="3"/>`;
+  return g;
+}
+function describeScene(stage){
+  const f=S.fruit?FRUIT[S.fruit].name:'';
+  if(stage==='bag'){if(!S.fruit)return 'An empty zip-top bag on the lab bench.';
+    let d=`A zip-top bag holding ${S.smash>=1?'smashed '+f+' pulp':S.smash>0?'partly smashed '+f:'a whole '+f}`;
+    const add=[S.water&&'water',S.soap&&'soap bubbles',S.salt&&'salt'].filter(Boolean);if(add.length)d+=', with '+add.join(', ');
+    if(S.knead>=1)d+=', kneaded into a smooth slurry';return d+'.';}
+  if(stage==='filter'){if(!S.rack)return 'The bag of slurry sits next to an empty test-tube rack, a funnel, and a coffee filter.';
+    let d='A test tube in a rack';if(S.funnel)d+=' with a funnel in its mouth';if(S.filter)d+=', lined with a coffee filter';
+    if(S.filtrate>=1)d+='. Tinted liquid filtrate has collected in the tube and pulp is left in the filter';return d+'.';}
+  if(stage==='tube'){let d='A test tube of tinted filtrate';if(S.ethanol)d+=' with a clear ethanol layer floating on top';
+    if(S.dna&&!S.spooled)d+='. White, stringy DNA with small bubbles is rising from the boundary into the ethanol';
+    if(S.spooled)d+='. A wooden stick holds a white blob of spooled DNA';return d+'.';}
+  if(stage==='micro'){if(S.spinning)return 'The centrifuge rotor is spinning with two balanced tubes.';
+    if(S.dye)return 'A microcentrifuge tube of blue DNA sample, ready to load.';
+    if(S.dissolved)return 'A microcentrifuge tube with the DNA dissolved in clear water.';
+    if(S.decanted)return 'A microcentrifuge tube with only a small white DNA pellet at the bottom.';
+    if(S.spun)return 'A microcentrifuge tube of ethanol with a white DNA pellet packed at the bottom.';
+    return 'A microcentrifuge tube holding a white clump of DNA in 0.5 mL of ethanol.';}
+  return '';
+}
+function drawP1(){
+  const st=STEPS[p1i].stage;
+  const inner=st==='bag'?bagSVG():st==='filter'?filterSVG():st==='tube'?bigTubeSVG():microSVG();
+  const desc=describeScene(st);
+  $('#p1-scene').innerHTML=`<svg viewBox="0 0 400 250" role="img" aria-label="${esc(desc)}" style="color:var(--ink)"><rect x="0" y="228" width="400" height="22" fill="#a7b4c4" opacity=".5"/>${inner}</svg>`;
+  $('#p1-caption').textContent=desc;
+}
+function renderP1(focus){
+  const step=STEPS[p1i];
+  $('#p1-stepper').innerHTML=STEPS.map((_,i)=>`<li class="${i<p1i?'done':i===p1i?'now':''}"></li>`).join('');
+  const box=$('#p1-step');
+  box.innerHTML=`<h3 id="p1h" tabindex="-1" style="margin-top:0">Step ${p1i+1} of ${STEPS.length}: ${step.title}</h3>
+   <div class="manual"><span class="tag">From the manual</span>${step.manual}</div>
+   <p>${step.prompt}</p><div id="p1-action"></div><div id="p1-afb" class="fb" role="status" aria-live="polite"></div>
+   <div id="p1-obs"></div><div id="p1-why"></div>
+   <div class="btn-row"><button class="btn" id="p1-next" ${'disabled'}>${p1i<STEPS.length-1?'Next step →':'Finish extraction'}</button></div>`;
+  drawP1();
+  buildAction(step);
+  $('#p1-next').addEventListener('click',()=>{
+    if(p1i<STEPS.length-1){p1i++;renderP1(true);}
+    else{finishP1();}
+  });
+  if(focus)$('#p1h').focus();
+}
+function actionDone(step){
+  if(step.apply&&step.action.type!=='choice')step.apply();
+  drawP1();
+  const obs=$('#p1-obs');obs.innerHTML=`<p class="note good" style="padding:.6rem .8rem"><strong>Observation:</strong> ${step.observe()}</p>`;
+  const why=$('#p1-why');
+  const enable=()=>{const n=$('#p1-next');n.disabled=false;announce('Step complete. The Next step button is now available.');};
+  if(step.why.length){why.innerHTML='<h4>Why?</h4>';mcqChain(why,step.why,'p1',enable);}else enable();
+}
+function buildAction(step){
+  const a=step.action,box=$('#p1-action'),fb=$('#p1-afb');
+  if(a.type==='choice'){
+    const list=el('div',{class:'choice-list'});
+    a.options.forEach(o=>{const b=el('button',{type:'button',class:'btn'},o.t);list.appendChild(b);
+      b.addEventListener('click',()=>{
+        if(list.dataset.done)return;
+        if(o.ok){list.dataset.done='1';$$('button',list).forEach(x=>x.disabled=true);b.classList.add('picked');b.disabled=false;b.setAttribute('aria-disabled','true');
+          fb.className='fb good';fb.innerHTML=`<strong>Done.</strong> ${o.fb||''}`;step.apply&&step.apply(o);
+          if(step.title.startsWith('Add cold'))record('p1',!list.dataset.miss);
+          actionDone(step);}
+        else{list.dataset.miss='1';fb.className='fb bad';fb.innerHTML=`<strong>Careful.</strong> ${o.fb} Choose again.`;}
+      });});
+    box.appendChild(list);
+  } else if(a.type==='repeat'){
+    let n=0;const total=a.times*a.secs;
+    box.innerHTML=`<div class="progress" role="progressbar" aria-label="${a.label} time" aria-valuemin="0" aria-valuemax="${total}" aria-valuenow="0" aria-valuetext="0 seconds of ${total/60} minutes"><span></span></div><p id="p1-rep" style="margin:.2rem 0">0:00 of ${total/60}:00</p>`;
+    const b=el('button',{type:'button',class:'btn'},a.label);box.appendChild(b);
+    b.addEventListener('click',()=>{if(n>=a.times)return;n++;S[a.key]=n/a.times;drawP1();
+      const secs=n*a.secs,pb=$('.progress',box);pb.setAttribute('aria-valuenow',secs);
+      const t=`${Math.floor(secs/60)}:${String(secs%60).padStart(2,'0')}`;pb.setAttribute('aria-valuetext',`${t} of ${total/60} minutes`);
+      $('.progress span',box).style.width=(100*n/a.times)+'%';$('#p1-rep').textContent=`${t} of ${total/60}:00`;
+      if(n>=a.times){b.disabled=true;fb.className='fb good';fb.innerHTML='<strong>Time is up.</strong>';actionDone(step);}
+      else if(n%3===0)announce(`${t} so far.`);
+    });
+  } else if(a.type==='multi'){
+    const list=el('div',{class:'choice-list'});let c=0;
+    a.items.forEach(it=>{const b=el('button',{type:'button',class:'btn'},it.t);list.appendChild(b);
+      b.addEventListener('click',()=>{if(S[it.key])return;S[it.key]=true;c++;b.classList.add('picked');b.innerHTML=`✓ ${it.t} (added)`;b.setAttribute('aria-disabled','true');drawP1();
+        announce(it.t.replace('Add','Added')+'.');if(c===a.items.length){fb.className='fb good';fb.innerHTML='<strong>All three are in the bag.</strong>';actionDone(step);}});});
+    box.appendChild(list);
+  } else if(a.type==='sequence'){
+    const list=el('div',{class:'choice-list'});let idx=0;let miss=false;
+    a.items.forEach(it=>{const b=el('button',{type:'button',class:'btn'},it.t);list.appendChild(b);
+      b.addEventListener('click',()=>{if(S[it.key])return;
+        if(a.order[idx]===it.key){S[it.key]=true;idx++;b.classList.add('picked');b.innerHTML=`✓ ${idx}. ${it.t}`;b.setAttribute('aria-disabled','true');drawP1();
+          fb.className='fb good';fb.innerHTML=`<strong>Placed.</strong> ${idx<a.order.length?'What comes next?':''}`;
+          if(idx===a.order.length){record('p1',!miss);fb.innerHTML='<strong>The filter is assembled.</strong>';actionDone(step);}}
+        else{miss=true;fb.className='fb bad';fb.innerHTML=`<strong>Not yet.</strong> ${it.why}`;}
+      });});
+    box.appendChild(list);
+  } else if(a.type==='button'){
+    const b=el('button',{type:'button',class:'btn'},a.label);box.appendChild(b);
+    b.addEventListener('click',()=>{b.disabled=true;
+      if(a.key==='pour'){let k=0;const tick=()=>{k++;S.filtrate=Math.min(1,k/10);drawP1();if(k<10)setTimeout(tick,RM?0:180);else{fb.className='fb good';fb.innerHTML='<strong>Filtering is finished.</strong>';actionDone(step);}};tick();}
+      else{fb.className='fb good';fb.innerHTML='<strong>Done.</strong>';actionDone(step);}
+    });
+  } else if(a.type==='centrifuge'){
+    box.innerHTML=`<fieldset class="mcq" style="margin-top:0"><legend>Centrifuge settings</legend>
+      <label class="field" for="cf-bal" style="margin-top:0">Balance</label>
+      <select id="cf-bal"><option value="">Choose…</option><option value="none">No balance tube needed for one tube</option><option value="eq">Place a tube with an equal volume of liquid directly opposite</option><option value="empty">Place an empty tube directly opposite</option></select>
+      <label class="field" for="cf-rpm">Speed</label>
+      <select id="cf-rpm"><option value="">Choose…</option><option>1,000 rpm</option><option>10,000 rpm</option><option>50,000 rpm</option></select>
+      <label class="field" for="cf-time">Time</label>
+      <select id="cf-time"><option value="">Choose…</option><option>30 seconds</option><option>2 minutes</option><option>20 minutes</option></select>
+      <div class="btn-row"><button type="button" class="btn" id="cf-go">Start the centrifuge</button></div></fieldset>`;
+    let miss=false;
+    $('#cf-go').addEventListener('click',()=>{
+      const bal=$('#cf-bal').value,rpm=$('#cf-rpm').value,t=$('#cf-time').value;const errs=[];
+      if(bal!=='eq')errs.push(bal==='none'||bal===''?'<strong>Balance:</strong> An unbalanced rotor wobbles violently and can damage the centrifuge or hurt someone. Always balance it with a tube of equal volume directly opposite.':'<strong>Balance:</strong> An empty tube weighs less than your sample, so the rotor is still unbalanced. Use an equal volume of liquid.');
+      if(rpm!=='10,000 rpm')errs.push(`<strong>Speed:</strong> ${rpm?rpm+' is not':'Choose'} the speed the manual calls for. Check step 10.`);
+      if(t!=='2 minutes')errs.push(`<strong>Time:</strong> ${t?t+' is not':'Choose'} the time the manual calls for.`);
+      if(errs.length){miss=true;fb.className='fb bad';fb.innerHTML=errs.join('<br>');return;}
+      record('p1',!miss);$('#cf-go').disabled=true;S.spinning=true;drawP1();fb.className='fb good';fb.innerHTML='<strong>Spinning…</strong> 10,000 rpm for 2 minutes (shortened).';
+      announce('Centrifuge spinning.');
+      setTimeout(()=>{S.spinning=false;S.spun=true;fb.innerHTML='<strong>Run complete.</strong> The rotor has stopped.';actionDone(step);},RM?50:2200);
+    });
+  }
+}
+function finishP1(){
+  markDone('s-p1');
+  const f=FRUIT[S.fruit];
+  $('#p1-step').innerHTML=`<h3 id="p1h" tabindex="-1" style="margin-top:0">Extraction complete!</h3>
+   <p class="note good" style="padding:.6rem .8rem">You extracted DNA from <strong>${f.name}</strong> with a <strong>${f.yield>=1?'high':'moderate'}</strong> yield. Your blue-dyed sample will be your practice sample in Procedure 3.</p>
+   <p>Next, learn how forensic scientists make a DNA fingerprint: PCR copies the DNA, and STRs and VNTRs make each person's pattern different.</p>
+   <div class="btn-row"><button class="btn" data-goto="s-pcr">Continue to PCR in Brief →</button><button class="btn secondary" id="p1-redo">Redo the extraction</button></div>`;
+  $('#p1h').focus();
+  $('#p1-redo').addEventListener('click',()=>{Object.assign(S,{fruit:null,smash:0,water:false,soap:false,salt:false,knead:0,rack:false,funnel:false,filter:false,filtrate:0,ethanol:false,dna:false,spooled:false,spinning:false,spun:false,decanted:false,dissolved:false,dye:false});p1i=0;renderP1(true);});
+}
+
+/* ====================================================================
+   GEL RENDERING (shared)
+   ==================================================================== */
+const dCrime=s=>2.05-0.6*Math.log10(s); // 1000bp→0.25, 100bp→0.85 of gel length at full run
+function makeD(max,min){const a=Math.log10(max),b=Math.log10(min);return s=>0.08+0.84*(a-Math.log10(s))/(a-b);}
+let GID=0;
+function gelSVG(o){
+  const id='g'+(++GID);const n=o.lanes.length,laneW=o.laneW||66,left=o.left||46,top=40,L=o.L||320,wellH=8;
+  const W=left+n*laneW+14,H=top+wellH+L+(o.noLabels?20:48);const d=o.d||dCrime,p=o.p==null?1:o.p;
+  let s=`<svg viewBox="0 0 ${W} ${H}" ${o.interactive?`role="group" aria-label="${esc(o.title)}"`:`role="img" aria-label="${esc(o.title)}"`} style="color:var(--ink);max-width:${W*1.6}px">`;
+  s+=`<defs><filter id="${id}b" x="-20%" y="-200%" width="140%" height="500%"><feGaussianBlur stdDeviation="${0.6+(o.blur||0)}"/></filter>
+      <linearGradient id="${id}sm" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--band)" stop-opacity=".9"/><stop offset="1" stop-color="var(--band)" stop-opacity="0"/></linearGradient></defs>`;
+  if(o.heading)s+=`<text x="${left+n*laneW/2}" y="14" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">${esc(o.heading)}</text>`;
+  s+=`<rect x="${left-6}" y="${top-6}" width="${n*laneW+12}" height="${L+wellH+12}" rx="6" fill="var(--gel)" stroke="var(--gel-edge)" stroke-width="2"/>`;
+  o.lanes.forEach((ln,i)=>{
+    const x=left+i*laneW;
+    s+=`<text x="${x+laneW/2}" y="${top-12}" text-anchor="middle" font-size="11" fill="currentColor">${i+1}</text>`;
+    s+=`<rect x="${x+9}" y="${top}" width="${laneW-18}" height="${wellH}" fill="#000" stroke="#4b5590"/>`;
+    if(ln.smear){const y2=top+wellH+p*d(1500)*L;s+=`<rect x="${x+11}" y="${top+wellH}" width="${laneW-22}" height="${Math.max(4,y2-top-wellH)}" fill="url(#${id}sm)" filter="url(#${id}b)"/>`;
+      if(o.interactive)s+=`<g class="band" tabindex="0" role="button" aria-label="Lane ${i+1}, ${esc(ln.label)}: a smear of very large DNA near the well" data-info="Lane ${i+1} (${esc(ln.label)}): a smear of very large DNA, mostly bigger than 1,000 bp, sitting near the well. Genomic DNA from the fruit was broken randomly into pieces of every size, so no sharp band forms."><rect class="hit" x="${x+6}" y="${top+wellH}" width="${laneW-12}" height="${Math.max(10,y2-top-wellH)}" fill="transparent" rx="3"/></g>`;}
+    (ln.bands||[]).forEach(b=>{
+      const frac=p*d(b.s);if(frac>1.0||frac<0)return;
+      const y=top+wellH+frac*L;const hgt=b.i>1.4?6:5;
+      s+=`<rect x="${x+11}" y="${y-hgt/2}" width="${laneW-22}" height="${hgt}" rx="2" fill="var(--band)" opacity="${Math.min(1,.25+.6*(b.i||1))}" filter="url(#${id}b)"/>`;
+      if(o.interactive){const info=b.info||`Lane ${i+1} (${ln.label}): band at about ${b.s.toLocaleString()} bp${b.note?'. '+b.note:''}.`;
+        s+=`<g class="band" tabindex="0" role="button" aria-label="${esc(`Lane ${i+1}, ${ln.label}, band`+(o.labelSizes?` near ${b.s} bp`:''))}" data-info="${esc(info)}"><rect class="hit" x="${x+6}" y="${y-7}" width="${laneW-12}" height="14" fill="transparent" rx="3"/></g>`;}
+    });
+    if(!o.noLabels){const lab=ln.label||'';const parts=lab.length>11&&lab.includes(' ')?[lab.slice(0,lab.lastIndexOf(' ')),lab.slice(lab.lastIndexOf(' ')+1)]:[lab];
+      parts.forEach((t,k)=>s+=`<text x="${x+laneW/2}" y="${top+wellH+L+22+k*13}" text-anchor="middle" font-size="11" fill="currentColor">${esc(t)}</text>`);}
+  });
+  if(o.ladderLabels){const li=o.ladderLane||0;o.lanes[li].bands.forEach(b=>{if(o.skipLabels&&o.skipLabels.includes(b.s))return;const frac=p*d(b.s);if(frac>1||frac<0)return;
+      s+=`<text x="${left-9}" y="${top+wellH+frac*L+4}" text-anchor="end" font-size="10" fill="currentColor">${b.s}</text>`;});
+    s+=`<text x="${left-9}" y="${top-12}" text-anchor="end" font-size="10" fill="currentColor">bp</text>`;}
+  s+=`<text x="${W-4}" y="${top+4}" text-anchor="end" font-size="11" font-weight="700" fill="currentColor">−</text><text x="${W-4}" y="${top+wellH+L+4}" text-anchor="end" font-size="11" font-weight="700" fill="#d33">+</text>`;
+  return s+'</svg>';
+}
+function wireBands(container,readout){
+  const show=g=>{$(readout).textContent=g.getAttribute('data-info');};
+  container.addEventListener('click',e=>{const g=e.target.closest('.band');if(g)show(g);});
+  container.addEventListener('keydown',e=>{const g=e.target.closest('.band');if(g&&(e.key==='Enter'||e.key===' ')){e.preventDefault();show(g);}});
+}
+function gelTable(lanes,caption){
+  let h=`<table><caption>${esc(caption)}</caption><thead><tr><th scope="col">Lane</th><th scope="col">Sample</th><th scope="col">Bands (approximate size)</th></tr></thead><tbody>`;
+  lanes.forEach((ln,i)=>{const b=ln.smear?'Smear of very large DNA (>1,000 bp) near the well':(ln.bands&&ln.bands.length?ln.bands.filter(x=>!x.hide).map(x=>`${x.s.toLocaleString()} bp${x.i<.6?' (faint)':''}${x.i>1.4?' (bright, two copies)':''}`).join(', '):'No bands');
+    h+=`<tr><td>${i+1}</td><td>${esc(ln.label)}</td><td>${b}</td></tr>`;});
+  return h+'</tbody></table>';
+}
+
+/* ====================================================================
+   PCR
+   ==================================================================== */
+(function(){
+  let n=0,busy=false;const fmt=x=>x>=1e9?(x/1e9).toLocaleString(undefined,{maximumFractionDigits:1})+' billion':x>=1e6?(x/1e6).toLocaleString(undefined,{maximumFractionDigits:1})+' million':x.toLocaleString();
+  const upd=()=>{$('#pcr-n').textContent=n;$('#pcr-copies').textContent=fmt(10*Math.pow(2,n));};
+  const hl=k=>$$('#pcr-steps div').forEach(d=>d.classList.toggle('active',+d.dataset.k===k));
+  $('#pcr-one').addEventListener('click',()=>{if(busy||n>=35)return;busy=true;const msgs=['Denaturing at 95 °C: strands separate…','Annealing at about 58 °C: primers bind…','Extending at 72 °C: polymerase copies the target…'];let k=0;
+    const t=()=>{if(k<3){hl(k);$('#pcr-msg').textContent=msgs[k];k++;setTimeout(t,RM?10:700);}else{hl(-1);n++;upd();busy=false;$('#pcr-msg').textContent=`Cycle ${n} done. The number of copies doubled to ${fmt(10*Math.pow(2,n))}.`;check();}};t();});
+  $('#pcr-ten').addEventListener('click',()=>{if(busy)return;n=Math.min(35,n+10);upd();$('#pcr-msg').textContent=n>=30?`After ${n} cycles (about 2 hours in a thermocycler), 10 copies have become about ${fmt(10*Math.pow(2,n))}. That is plenty to see on a gel.`:`${n} cycles: ${fmt(10*Math.pow(2,n))} copies. Keep going. Most PCRs run about 30 cycles.`;check();});
+  $('#pcr-reset').addEventListener('click',()=>{n=0;upd();hl(-1);$('#pcr-msg').textContent='Reset to 10 starting copies.';});
+  let shown=false;function check(){if(shown||n<3)return;shown=true;
+    mcqChain($('#pcr-quiz'),[
+      {q:'Why do PCR primers determine which part of the DNA gets copied?',options:[
+        {t:'Primers base-pair only with the sequences on either side of the target, and polymerase can only start building from a primer.',ok:true,fb:'Change the primers and you change which region is copied, such as locus 1 versus locus 2 in our crime case.'},
+        {t:'Primers cut the DNA out of the chromosome.',ok:false,fb:'Primers don\'t cut DNA. They are short single strands that base-pair with the DNA.'},
+        {t:'Primers copy the entire genome.',ok:false,fb:'PCR copies only the stretch between the two primers.'}]},
+      {q:'Why does a COVID test need reverse transcriptase before PCR?',options:[
+        {t:'The virus\'s genome is RNA, and PCR polymerase copies DNA, so the RNA must first be converted into DNA.',ok:true,fb:'That combined method is called RT-PCR.'},
+        {t:'Reverse transcriptase kills the virus to make the test safe.',ok:false,fb:'Its job is to convert RNA into DNA.'},
+        {t:'It makes the sample glow.',ok:false,fb:'The glow comes from a fluorescent probe.'}]}
+    ],'pcr',()=>markDone('s-pcr'));}
+})();
+
+/* ====================================================================
+   STR / VNTR builder
+   ==================================================================== */
+(function(){
+  const M={str:{unit:4,flank:100,min:5,max:20,seq:'GATA',ladder:[100,120,140,160,180,200],d:makeD(215,92)},
+           vntr:{unit:16,flank:150,min:14,max:40,seq:'16-bp unit',ladder:[300,400,500,600,700,800],d:makeD(860,280)}};
+  let mode='str',mat=8,pat=12;
+  function clamp(){const m=M[mode];mat=Math.max(m.min,Math.min(m.max,mat));pat=Math.max(m.min,Math.min(m.max,pat));}
+  function strip(y,n,label,color){const m=M[mode];const avail=360;const bw=Math.min(22,avail/n);let g=`<text x="10" y="${y-8}" font-size="12" fill="currentColor">${label}: ${n} repeats</text>`;
+    g+=`<rect x="10" y="${y}" width="${60}" height="20" fill="#9aa8ba"/><path d="M14 ${y-4} h40 l-6 -5 M54 ${y-4} l-6 5" stroke="#1e7b34" stroke-width="2.5" fill="none"/>`;
+    for(let k=0;k<n;k++)g+=`<rect x="${72+k*bw}" y="${y}" width="${bw-1.5}" height="20" fill="${color}"/>`;
+    const e=72+n*bw+2;g+=`<rect x="${e}" y="${y}" width="60" height="20" fill="#9aa8ba"/><path d="M${e+56} ${y+26} h-40 l6 -5 M${e+16} ${y+26} l6 5" stroke="#1e7b34" stroke-width="2.5" fill="none"/>`;return g;}
+  function draw(){
+    clamp();const m=M[mode];$('#mat-n').textContent=mat;$('#pat-n').textContent=pat;
+    const sz=n=>m.flank+m.unit*n;const a=sz(mat),b=sz(pat);
+    const desc=`Two chromosome strips. Green arrows mark the primers on either side of the repeats. Mother's allele has ${mat} ${m.seq} repeats and father's allele has ${pat}.`;
+    $('#str-diagram').innerHTML=`<svg viewBox="0 0 520 130" role="img" aria-label="${esc(desc)}" style="color:var(--ink)">${strip(30,mat,"Mother's allele",'#e45d8a')}${strip(95,pat,"Father's allele",'#4c8fd9')}</svg>`;
+    const homo=a===b;
+    const lanes=[{label:'Ladder',bands:m.ladder.map(s=>({s,i:.8}))},{label:'This person',bands:homo?[{s:a,i:1.9}]:[{s:a,i:1},{s:b,i:1}]}];
+    $('#str-gel').innerHTML=gelSVG({lanes,d:m.d,L:220,laneW:80,left:40,ladderLabels:true,title:homo?`Mini gel: one bright band at ${a} bp beside a ladder`:`Mini gel: two bands, at ${Math.max(a,b)} and ${Math.min(a,b)} bp, beside a ladder`});
+    $('#str-readout').innerHTML=`PCR product size = ${m.flank} bp of flanking DNA + (number of repeats × ${m.unit} bp).<br>Mother's allele: ${m.flank} + ${mat} × ${m.unit} = <strong>${a} bp</strong>. Father's allele: ${m.flank} + ${pat} × ${m.unit} = <strong>${b} bp</strong>.<br>`+
+      (homo?'Both alleles are the same size, so this person is <strong>homozygous</strong>: one bright band.':'This person is <strong>heterozygous</strong>: two bands. The allele with more repeats is longer, so it stays closer to the well.');
+  }
+  $$('input[name=strmode]').forEach(r=>r.addEventListener('change',()=>{mode=r.value;if(mode==='vntr'){mat=18;pat=29;}else{mat=8;pat=12;}draw();}));
+  $('#mat-minus').addEventListener('click',()=>{mat--;draw();});$('#mat-plus').addEventListener('click',()=>{mat++;draw();});
+  $('#pat-minus').addEventListener('click',()=>{pat--;draw();});$('#pat-plus').addEventListener('click',()=>{pat++;draw();});
+  draw();
+  mcqChain($('#str-quiz'),[
+    {q:'What differs between two people at an STR locus?',options:[
+      {t:'The number of times the short sequence is repeated, which changes the length of the PCR product.',ok:true,fb:'Same location and same repeat sequence, different repeat count.'},
+      {t:'Whether the person has that locus at all.',ok:false,fb:'Everyone has the locus. The repeat number is what varies.'},
+      {t:'The repeat sequence itself, for example GATA versus CTTA.',ok:false,fb:'The repeat unit is the same for everyone at a given locus.'}]},
+    {q:'Why does most people\'s DNA show two bands per locus?',options:[
+      {t:'They inherited one allele from each parent, and the two alleles usually have different repeat numbers.',ok:true,fb:'Keep this in mind. It is the key to the paternity case.'},
+      {t:'PCR always makes exactly two products.',ok:false,fb:'A homozygous person shows only one band.'},
+      {t:'One band is DNA and the other is RNA.',ok:false,fb:'Both bands are DNA, one copy of the locus from each chromosome.'}]},
+    {q:'How do STRs and VNTRs differ?',options:[
+      {t:'STRs have short repeat units (2–6 bp), and VNTRs have longer units (about 10–100 bp).',ok:true,fb:'Modern forensics (CODIS) uses STRs because they work even on small or degraded samples.'},
+      {t:'STRs are found only in criminals.',ok:false,fb:'Everyone has STRs.'},
+      {t:'VNTRs are in RNA and STRs are in DNA.',ok:false,fb:'Both are DNA sequences on chromosomes.'}]}
+  ],'str',()=>markDone('s-str'));
+})();
+
+/* ====================================================================
+   GEL CONCEPT SIMULATOR (canvas)
+   ==================================================================== */
+const gelSim=(function(){
+  const cv=$('#gel-canvas'),ctx=cv.getContext('2d');const W=cv.width,H=cv.height;
+  const top=70,bottom=405,gl=bottom-top;const TYPES=[{bp:200,c:'#f2b134',len:8,rel:.2},{bp:800,c:'#4cc3d9',len:16,rel:.8},{bp:3000,c:'#e45d8a',len:30,rel:3}];
+  let on=false,rev=false,conc=1,V=100,parts=[],last=0,raf=null,fibers=[],lastMsg=0;
+  function seed(){parts=[];TYPES.forEach((t,ti)=>{for(let k=0;k<14;k++)parts.push({t:ti,x:110+Math.random()*220,y:top-6+Math.random()*10,ph:Math.random()*6,gone:false});});}
+  function makeFibers(){fibers=[];const n=Math.round(90*conc);for(let k=0;k<n;k++){fibers.push([90+Math.random()*260,top+Math.random()*gl,(Math.random()-.5)*50,(Math.random()-.5)*50]);}}
+  function speed(t){return (V/100)*42*Math.exp(-0.75*conc*TYPES[t].rel);}
+  function draw(){
+    const dark=document.documentElement.getAttribute('data-theme')==='dark';
+    ctx.clearRect(0,0,W,H);ctx.fillStyle=dark?'#27445a':'#d7ecf7';ctx.fillRect(0,0,W,H);
+    ctx.fillStyle=rev?'#d33':'#222';ctx.fillRect(20,14,W-40,12);ctx.fillStyle=rev?'#222':'#d33';ctx.fillRect(20,H-22,W-40,12);
+    ctx.font='bold 14px system-ui';ctx.fillStyle=dark?'#e8edf3':'#1b2330';
+    ctx.fillText(rev?'+ (red) at this end':'− (black) cathode',24,50);ctx.fillText(rev?'− (black) at this end':'+ (red) anode',24,H-30);
+    ctx.fillStyle='#e9e4d6';ctx.fillRect(90,top,260,gl);
+    ctx.strokeStyle='rgba(120,100,70,.35)';ctx.lineWidth=1.2;fibers.forEach(f=>{ctx.beginPath();ctx.moveTo(f[0],f[1]);ctx.lineTo(f[0]+f[2],f[1]+f[3]);ctx.stroke();});
+    ctx.fillStyle='#3b3b3b';ctx.fillRect(105,top-2,230,10);
+    ctx.font='12px system-ui';ctx.fillStyle=dark?'#e8edf3':'#1b2330';ctx.fillText('well',344,top+8);ctx.fillText('agarose gel',356,top+gl/2);
+    parts.forEach(p=>{if(p.gone)return;const t=TYPES[p.t];ctx.strokeStyle=t.c;ctx.lineWidth=3;ctx.lineCap='round';ctx.beginPath();
+      for(let k=0;k<=t.len;k+=2){const xx=p.x+Math.sin(p.ph+k*.5)*3,yy=p.y-k*.6;k===0?ctx.moveTo(xx+(k-t.len/2)*.6,yy):ctx.lineTo(xx+(k-t.len/2)*.6,yy);}ctx.stroke();});
+    if(on){for(let k=0;k<8;k++){ctx.fillStyle='rgba(255,255,255,.8)';ctx.beginPath();ctx.arc(40+k*50+((Date.now()/30+k*13)%20),30+((Date.now()/20+k*7)%14),2.5,0,7);ctx.fill();ctx.beginPath();ctx.arc(50+k*48,H-26-((Date.now()/25+k*5)%12),2,0,7);ctx.fill();}}
+    meters();
+  }
+  function avg(t){const ps=parts.filter(p=>p.t===t);const inGel=ps.filter(p=>!p.gone);if(!inGel.length)return null;return inGel.reduce((a,p)=>a+(p.y-top),0)/inGel.length/gl;}
+  function meters(){const box=$('#g-meters');box.innerHTML=TYPES.map((t,i)=>{const a=avg(i);const v=a==null?0:Math.max(0,Math.min(100,Math.round(a*100)));
+      return `<div class="meter-row"><span>${['Small','Medium','Large'][i]} (${t.bp.toLocaleString()} bp)</span><span class="bar" aria-hidden="true"><span style="width:${v}%;background:${t.c}"></span></span><span>${a==null?'gone':v+'%'}</span></div>`;}).join('');
+    cv.setAttribute('aria-label',`Side view of a gel lane with the wells at the top. Small fragments ${pct(0)}, medium fragments ${pct(1)}, large fragments ${pct(2)}.`);}
+  function pct(i){const a=avg(i);return a==null?'have left the gel into the buffer':a<.03?'are still in the well':`have moved ${Math.round(a*100)} percent of the gel length`;}
+  function step(ts){if(!on){raf=null;return;}const dt=Math.min(.05,(ts-(last||ts))/1000);last=ts;
+    parts.forEach(p=>{if(p.gone)return;const v=speed(p.t)*(rev?-1:1);p.y+=v*dt+(Math.random()-.5)*.6;p.ph+=dt*3;
+      if(p.y>bottom-4)p.y=bottom-4;if(rev&&p.y<top-10){p.y-=dt*20;if(p.y<top-40)p.gone=true;}});
+    draw();
+    if(ts-lastMsg>4000){lastMsg=ts;status(true);}
+    raf=requestAnimationFrame(step);}
+  function status(auto){let m;
+    if(!on)m='Power is off. Nothing moves without an electric field.';
+    else if(rev)m='The leads are reversed. Negatively charged DNA is moving toward the top, out of the well and into the buffer. These samples are lost!';
+    else{const a=[0,1,2].map(avg);m=`Power on at ${V} volts on a ${conc.toFixed(1)}% gel. Small fragments ${pct(0)}; medium ${pct(1)}; large ${pct(2)}.`;
+      if(a[0]>.9)m+=' The small fragments are nearing the end of the gel. In a real run you would turn the power off now.';}
+    $('#g-status').textContent=m;}
+  function setOn(v){on=v;const b=$('#g-power');b.textContent=on?'Turn power OFF':'Turn power ON';b.setAttribute('aria-pressed',on?'true':'false');
+    if(on&&!raf){last=0;raf=requestAnimationFrame(step);}status();draw();}
+  $('#g-power').addEventListener('click',()=>{setOn(!on);if(on)announce('Power on.');});
+  $('#g-reverse').addEventListener('click',()=>{rev=!rev;const b=$('#g-reverse');b.setAttribute('aria-pressed',rev?'true':'false');b.textContent=rev?'Fix the leads (normal polarity)':'Swap the leads (reverse polarity)';status();draw();});
+  $('#g-reset').addEventListener('click',()=>{seed();status();draw();announce('Samples reset to the well.');});
+  $('#g-conc').addEventListener('input',e=>{conc=+e.target.value;$('#g-conc-val').textContent=conc.toFixed(1)+'%';e.target.setAttribute('aria-valuetext',conc.toFixed(1)+' percent');makeFibers();draw();});
+  $('#g-volt').addEventListener('input',e=>{V=+e.target.value;$('#g-volt-val').textContent=V+' V';e.target.setAttribute('aria-valuetext',V+' volts');});
+  seed();makeFibers();draw();
+  mcqChain($('#gel-quiz'),[
+    {q:'Why are the wells placed at the black (negative) end of the gel box?',options:[
+      {t:'DNA is negatively charged, so it moves away from the negative electrode toward the positive (red) one, across the length of the gel.',ok:true,fb:'"DNA runs to red."'},
+      {t:'DNA is positively charged, so the black end pushes it.',ok:false,fb:'The phosphate groups make DNA negative. Try reversing the leads in the simulator to see what happens.'},
+      {t:'The black end is colder, which protects the DNA.',ok:false,fb:'Electrode color marks charge, not temperature.'}]},
+    {q:'In the simulator, which fragments travel farthest, and why?',options:[
+      {t:'The small ones, because they slip through the pores of the agarose mesh more easily.',ok:true,fb:'The gel works like a sieve. Small fragments go far and large ones stay near the well.'},
+      {t:'The large ones, because they carry more negative charge.',ok:false,fb:'Large fragments do carry more charge, but also more mass, so charge per length is the same. The mesh holds the large ones back.'},
+      {t:'They all travel equally far.',ok:false,fb:'That would only happen without a gel. The mesh is what separates them.'}]},
+    {q:'What happens when you raise the agarose concentration to 2%?',options:[
+      {t:'The pores get smaller, so everything slows down and large fragments barely move.',ok:true,fb:'High-percentage gels are used to separate small fragments that are close in size.'},
+      {t:'The DNA moves faster.',ok:false,fb:'Try it in the simulator. A denser mesh slows everything down.'},
+      {t:'The DNA changes direction.',ok:false,fb:'Only reversing the electrodes changes direction.'}]}
+  ],'gel',()=>markDone('s-gel'));
+  return {draw};
+})();
+
+/* ====================================================================
+   PROCEDURE 3 — LOADING
+   ==================================================================== */
+const LADDER=[1000,900,800,700,600,500,400,300,200,100].map(s=>({s,i:s===500?1.5:.8}));
+const SAMPLES={
+  fruit:{label:'Fruit DNA (practice)',short:'Fruit DNA',smear:true},
+  E1:{label:'Evidence-1',bands:[700,400]},X1:{label:'Suspect X-1',bands:[700,400]},Y1:{label:'Suspect Y-1',bands:[700,400]},
+  E2:{label:'Evidence-2',bands:[800,350]},X2:{label:'Suspect X-2',bands:[800,500]},Y2:{label:'Suspect Y-2',bands:[800,350]}};
+const ORDER=['fruit','E1','X1','Y1','E2','X2','Y2'];
+const LD={};
+function resetLoad(){Object.assign(LD,{wells:[{sample:'ladder'},null,null,null,null,null,null,null],tip:'none',tipLast:null,phase:'tip',cur:null,curContam:null,volSet:false,loads:0,miss:{}});}
+resetLoad();
+function loadGelSVG(){
+  let s=`<svg viewBox="0 0 520 290" role="img" aria-labelledby="lgt" style="color:var(--ink)"><title id="lgt">${esc(loadDesc())}</title>`;
+  s+=`<rect x="10" y="10" width="500" height="270" rx="10" fill="var(--buffer)" stroke="#5f6f86" stroke-width="2"/>`;
+  s+=`<rect x="20" y="16" width="480" height="10" fill="#222"/><text x="26" y="44" font-size="13" font-weight="700" fill="currentColor">− black (cathode)</text>`;
+  s+=`<rect x="20" y="264" width="480" height="10" fill="#d33"/><text x="26" y="258" font-size="13" font-weight="700" fill="currentColor">+ red (anode)</text>`;
+  s+=`<rect x="60" y="56" width="400" height="190" fill="#eef0f0" opacity=".75" stroke="#8a97a8"/>`;
+  for(let i=0;i<8;i++){const x=78+i*48;const w=LD.wells[i];
+    s+=`<rect x="${x}" y="70" width="32" height="10" fill="${w?(w.sample==='ladder'?'#6a3fb5':'#3d5bd9'):'#2c2f3a'}" stroke="#111"/>`;
+    s+=`<text x="${x+16}" y="98" text-anchor="middle" font-size="12" fill="#1b2330">${i+1}</text>`;
+    if(w){const lab=w.sample==='ladder'?'Ladder':SAMPLES[w.sample].short||SAMPLES[w.sample].label.replace('Suspect ','');s+=`<text x="${x+16}" y="112" text-anchor="middle" font-size="9.5" fill="#1b2330">${esc(lab)}</text>`;}
+  }
+  if(LD.cur){s+=`<g><rect x="230" y="150" width="60" height="16" rx="3" fill="#9aa8ba"/><path d="M252 166 L260 214 L268 166Z" fill="#f3f6fa" stroke="#5f6f86"/><path d="M256 180 L260 210 L264 180Z" fill="#3d5bd9"/></g><text x="300" y="185" font-size="12" fill="#1b2330">${esc(SAMPLES[LD.cur].label)} in tip</text>`;}
+  return s+'</svg>';
+}
+function loadDesc(){const filled=LD.wells.map((w,i)=>w?`well ${i+1}: ${w.sample==='ladder'?'DNA ladder':SAMPLES[w.sample].label}`:null).filter(Boolean);
+  return `Top view of the gel box: wells at the black negative end, red positive end at the bottom. Loaded so far: ${filled.join('; ')}.${LD.cur?' The pipette tip holds '+SAMPLES[LD.cur].label+'.':''}`;}
+function renderNotebook(){$('#notebook tbody').innerHTML=LD.wells.map((w,i)=>`<tr><td>${i+1}</td><td>${w?(w.sample==='ladder'?'DNA ladder (loaded by instructor)':SAMPLES[w.sample].label+(w.contam?' <span class="pill">reused tip</span>':'')):'<em>empty</em>'}</td></tr>`).join('');}
+function pipStatus(){const tip=LD.tip==='none'?'no tip':LD.tip==='fresh'?'fresh tip':`used tip (last held ${SAMPLES[LD.tipLast].label})`;
+  $('#pip-status').innerHTML=`<strong>Micropipette:</strong> ${LD.volSet?'set to 20 µL':'volume not set'} · ${tip} · ${LD.cur?'holding '+SAMPLES[LD.cur].label:'empty'}<br><strong>Loaded:</strong> ${LD.loads} of 7 samples`;}
+function drawLoad(){$('#load-gel').innerHTML=loadGelSVG();$('#load-caption').textContent=loadDesc();renderNotebook();pipStatus();}
+const TECH={
+  volume:{q:'Set the micropipette volume for loading a well.',opts:[
+    {t:'5 µL',ok:false,fb:'Too little DNA. Your bands would be very faint.'},
+    {t:'20 µL',ok:true,fb:'20 µL fills a standard well without overflowing.'},
+    {t:'50 µL',ok:false,fb:'The well can\'t hold that much. Sample would overflow into neighboring wells and mix lanes.'}]},
+  draw:{q:'How do you draw up the sample?',opts:[
+    {t:'Place the tip in the sample, then press the plunger down and release.',ok:false,fb:'Pressing with the tip in the liquid blows air bubbles into the sample, and the volume won\'t be accurate.'},
+    {t:'Press the plunger to the FIRST stop, place the tip just under the sample surface, and release slowly.',ok:true,fb:'That draws up exactly the set volume.'},
+    {t:'Press all the way to the SECOND stop, place the tip in the sample, and release.',ok:false,fb:'The second stop is only for blowing out. Drawing from it takes up too much liquid.'}]},
+  position:{q:'Where do you place the tip to load the well?',opts:[
+    {t:'Push the tip down until it touches the bottom of the well.',ok:false,fb:'You\'d puncture the gel, and the sample would leak out underneath and be lost.'},
+    {t:'Hold the tip above the buffer and let the sample drip in.',ok:false,fb:'Drops falling through the buffer spread out and can drift into other wells.'},
+    {t:'Steady your hand, lower the tip through the buffer until it is just inside the top of the well, without touching the bottom.',ok:true,fb:'The dense loading dye lets the sample sink neatly into the well.'}]},
+  dispense:{q:'How do you dispense the sample?',opts:[
+    {t:'Press slowly to the first stop, then lift the tip out of the buffer before releasing the plunger.',ok:true,fb:'The sample sinks into the well and stays there.'},
+    {t:'Press quickly all the way to the second stop.',ok:false,fb:'The puff of air from the second stop blows the sample out of the well.'},
+    {t:'Press to the first stop, then release the plunger while the tip is still in the well.',ok:false,fb:'Releasing in the well sucks your sample back up into the tip.'}]}
+};
+function loadPanel(){
+  const P=$('#load-panel');const fb=$('#load-fb');P.innerHTML='';drawLoad();
+  const auto=$('#load-auto').checked;
+  if(LD.loads>=7){P.innerHTML=`<h3 id="ldh" tabindex="-1" style="margin-top:0">Gel loaded!</h3><p>All 7 samples are in their wells, and your notebook records which sample is in each lane. On to the power supply.</p><div class="btn-row"><button class="btn" data-goto="s-p4">Continue to Procedure 4 →</button></div>`;markDone('s-p3');$('#ldh').focus();return;}
+  const h=t=>`<h3 id="ldh" tabindex="-1" style="margin-top:0">${t}</h3>`;
+  const list=el('div',{class:'choice-list'});
+  const addBtn=(t,fn)=>{const b=el('button',{type:'button',class:'btn'},t);b.addEventListener('click',fn);list.appendChild(b);return b;};
+  const tech=(key,next)=>{if(auto&&key!=='volume'){techAuto(key);LD.phase=next;return loadPanel();}
+    const T=TECH[key];P.innerHTML=h(T.q);T.opts.forEach(o=>addBtn(o.t,()=>{
+      if(o.ok){if(!LD.miss[key+LD.loads])record('p3',true);fb.className='fb good';fb.innerHTML=`<strong>Good technique.</strong> ${o.fb}`;if(key==='volume')LD.volSet=true;LD.phase=next;loadPanel();focusPanel();}
+      else{if(!LD.miss[key+LD.loads]){LD.miss[key+LD.loads]=1;record('p3',false);}fb.className='fb bad';fb.innerHTML=`<strong>Problem:</strong> ${o.fb} Try again.`;}}));P.appendChild(list);};
+  if(LD.phase==='tip'){
+    P.innerHTML=h(LD.loads===0?'Start with your practice sample. First, get the pipette ready.':'Prepare the pipette for the next sample.');
+    if(LD.tip==='none')addBtn('Attach a fresh, sterile tip',()=>{LD.tip='fresh';LD.phase=LD.volSet?'tube':'volume';fb.className='fb';fb.innerHTML='';loadPanel();focusPanel();});
+    else{addBtn('Eject the used tip into the waste and attach a fresh one',()=>{LD.tip='fresh';LD.phase='tube';fb.className='fb good';fb.innerHTML='<strong>Fresh tip on.</strong> No carry-over from the last sample.';loadPanel();focusPanel();});
+      addBtn('Keep using the same tip (it looks empty)',()=>{LD.curContam=LD.tipLast;LD.phase='tube';fb.className='fb warn';fb.innerHTML='<strong>Heads up:</strong> a "used" tip still holds a tiny film of the last sample. Watch your gel for what this does.';techLog.push(`Reused a pipette tip after ${SAMPLES[LD.tipLast].label}.`);renderScores();loadPanel();focusPanel();});}
+    P.appendChild(list);
+  } else if(LD.phase==='volume'){tech('volume','tube');}
+  else if(LD.phase==='tube'){
+    P.innerHTML=h(LD.loads===0?'Pick up your practice sample.':'Which tube will you load next?');
+    const loaded=new Set(LD.wells.filter(Boolean).map(w=>w.sample));
+    ORDER.forEach(k=>{if(loaded.has(k))return;const b=addBtn(SAMPLES[k].label,()=>{LD.cur=k;LD.phase='draw';loadPanel();focusPanel();});
+      if(LD.loads===0&&k!=='fruit'){b.disabled=true;b.setAttribute('aria-describedby','practice-first');}});
+    P.appendChild(list);if(LD.loads===0)P.appendChild(el('p',{id:'practice-first',class:'caption'},'The manual says to practice with your fruit DNA first.'));
+  } else if(LD.phase==='draw'){tech('draw','well');}
+  else if(LD.phase==='well'){
+    P.innerHTML=h(`Which well will you load ${SAMPLES[LD.cur].label} into?`);
+    LD.wells.forEach((w,i)=>{if(w)return;addBtn(`Well ${i+1}`+(LD.cur==='fruit'&&i===7?' (suggested for practice)':''),()=>{LD.target=i;LD.phase='position';loadPanel();focusPanel();});});
+    P.appendChild(list);
+  } else if(LD.phase==='position'){tech('position','dispense');}
+  else if(LD.phase==='dispense'){
+    if(auto){techAuto('dispense');return finishLoad();}
+    const T=TECH.dispense;P.innerHTML=h(T.q);T.opts.forEach(o=>addBtn(o.t,()=>{
+      if(o.ok){if(!LD.miss['dispense'+LD.loads])record('p3',true);finishLoad(o.fb);}
+      else{if(!LD.miss['dispense'+LD.loads]){LD.miss['dispense'+LD.loads]=1;record('p3',false);}fb.className='fb bad';fb.innerHTML=`<strong>Problem:</strong> ${o.fb} Try again.`;}}));P.appendChild(list);
+  }
+}
+function techAuto(key){const f=$('#load-fb');const m={draw:'drew up 20 µL from the first stop',position:'placed the tip just inside the well',dispense:'dispensed slowly to the first stop and lifted out'};f.className='fb good';f.innerHTML=`<strong>Auto technique:</strong> ${m[key]}.`;}
+function finishLoad(msg){
+  const fb=$('#load-fb');const i=LD.target;LD.wells[i]={sample:LD.cur,contam:LD.curContam};
+  fb.className='fb good';fb.innerHTML=`<strong>Loaded.</strong> ${msg||''} ${SAMPLES[LD.cur].label} is in well ${i+1} and recorded in your notebook.`;
+  LD.tipLast=LD.cur;LD.tip='used';LD.cur=null;LD.curContam=null;LD.loads++;LD.phase='tip';
+  if(LD.loads>=2)$('#load-auto-wrap').hidden=false;
+  loadPanel();focusPanel();
+}
+function focusPanel(){const h=$('#ldh');if(h)h.focus();}
+$('#load-auto').addEventListener('change',()=>loadPanel());
+$('#load-reset').addEventListener('click',()=>{resetLoad();$('#load-fb').className='fb';$('#load-fb').innerHTML='';$('#load-auto-wrap').hidden=true;$('#load-auto').checked=false;loadPanel();focusPanel();announce('Gel cleared. Start loading again.');});
+loadPanel();
+
+/* ====================================================================
+   PROCEDURE 4 — RUN + READ
+   ==================================================================== */
+const R={lid:false,leads:null,V:50,on:false,p:0,min:0,removed:false,stained:false,viewed:false,raf:null,last:0,maxV:0,warnedHot:false};
+function runLanes(){return LD.wells.map((w,i)=>{
+  if(!w)return {label:'(empty)',bands:[]};
+  if(w.sample==='ladder')return {label:'Ladder',bands:LADDER};
+  const sm=SAMPLES[w.sample];
+  if(sm.smear)return {label:sm.short,smear:true,bands:[]};
+  let bands=sm.bands.map(s=>({s,i:1}));
+  if(w.contam){const c=SAMPLES[w.contam];if(c.smear)bands.push({s:1400,i:.35,note:'faint smear carried over from the reused tip'});
+    else c.bands.forEach(s=>{if(!sm.bands.includes(s))bands.push({s,i:.35,note:`faint. This band doesn't belong to ${sm.label}. It was carried over on the reused tip from ${c.label}`});});}
+  return {label:sm.label,bands};});}
+function runBoxSVG(){
+  const rev=R.leads==='rev';const L=180,top=72;
+  let s=`<svg viewBox="0 0 520 330" role="img" aria-label="${esc(runDesc())}" style="color:var(--ink)">`;
+  s+=`<rect x="10" y="30" width="500" height="250" rx="12" fill="var(--buffer)" stroke="#5f6f86" stroke-width="2"/>`;
+  if(R.lid)s+=`<rect x="10" y="30" width="500" height="250" rx="12" fill="#c7d2de" opacity=".35" stroke="#5f6f86" stroke-dasharray="6 4"/><text x="500" y="24" text-anchor="end" font-size="12" fill="currentColor">lid closed</text>`;
+  s+=`<rect x="20" y="40" width="480" height="8" fill="#222"/><rect x="20" y="262" width="480" height="8" fill="#d33"/>`;
+  s+=`<circle cx="18" cy="44" r="7" fill="#222"/><circle cx="18" cy="266" r="7" fill="#d33"/>`;
+  if(R.leads){s+=`<path d="M18 44 C -10 100, -10 290, 42 311" stroke="${rev?'#d33':'#222'}" stroke-width="4" fill="none"/><path d="M18 266 C 10 300, 50 300, 62 311" stroke="${rev?'#222':'#d33'}" stroke-width="4" fill="none"/>`;}
+  s+=`<rect x="30" y="296" width="140" height="30" rx="4" fill="#3a4250"/><text x="112" y="316" text-anchor="middle" font-size="11" fill="#ffffff">${R.on?R.V+' V ON':'power OFF'}</text><circle cx="42" cy="311" r="5" fill="#222" stroke="#fff"/><circle cx="62" cy="311" r="5" fill="#d33" stroke="#fff"/>`;
+  s+=`<rect x="60" y="62" width="400" height="${L+18}" fill="#eef0f0" opacity=".8" stroke="#8a97a8"/>`;
+  const dye=R.p*0.92;
+  for(let i=0;i<8;i++){const x=78+i*48;const w=LD.wells[i];
+    s+=`<rect x="${x}" y="${top}" width="32" height="8" fill="#2c2f3a"/><text x="${x+16}" y="${top-4}" text-anchor="middle" font-size="10" fill="#1b2330">${i+1}</text>`;
+    if(w){let y=top+4+dye*L;const col=w.sample==='ladder'?'#6a3fb5':'#3d5bd9';
+      if(y<top-10){s+=`<ellipse cx="${x+16}" cy="${Math.max(50,y)}" rx="18" ry="6" fill="${col}" opacity=".25"/>`;}
+      else if(y<=top+8+L)s+=`<rect x="${x+2}" y="${y-3}" width="28" height="6" rx="2" fill="${col}" opacity=".85"/>`;}
+  }
+  if(R.on){for(let k=0;k<10;k++){const bx=40+k*46;s+=`<circle class="bub" style="animation-delay:${k*.13}s" cx="${bx}" cy="44" r="${rev?2:3}" fill="#fff"/>`;if(k%2===0)s+=`<circle class="bub" style="animation-delay:${k*.21}s" cx="${bx+20}" cy="264" r="${rev?3:2}" fill="#fff"/>`;}}
+  return s+'</svg>';
+}
+function runDesc(){let d='Gel box seen from above, with the black negative electrode at the top and the red positive electrode at the bottom. ';
+  d+=R.lid?'The lid is closed. ':'The lid is open. ';
+  d+=R.leads==='ok'?'Leads connected red to red and black to black. ':R.leads==='rev'?'Leads connected backwards. ':'Leads not connected. ';
+  d+=R.on?`Power is on at ${R.V} volts and bubbles are rising from both electrodes. `:'Power is off. ';
+  const pct=Math.round(R.p*92);d+=R.p<0?'The blue loading dye has moved upward out of the wells into the buffer.':`The blue loading dye front has moved ${pct} percent of the way down the gel.`;return d;}
+function drawRun(){$('#run-box').innerHTML=runBoxSVG();$('#run-caption').textContent=runDesc();$('#run-time').textContent=Math.round(R.min);$('#run-dye').textContent=Math.max(0,Math.round(R.p*92));}
+function runEnter(){
+  const full=LD.loads>=7;$('#run-needload').hidden=full;
+  $$('#run-lid,#lead-ok,#lead-rev,#run-volt').forEach(b=>b.disabled=!full||R.removed);
+  updPower();drawRun();
+}
+function updPower(){const b=$('#run-power');b.disabled=!(LD.loads>=7&&R.lid&&R.leads)||R.removed;b.textContent=R.on?'Turn power OFF':'Turn power ON';b.setAttribute('aria-pressed',R.on?'true':'false');}
+$('#run-autoload').addEventListener('click',()=>{resetLoad();ORDER.forEach((k,j)=>{LD.wells[k==='fruit'?7:j]={sample:k};});LD.loads=7;LD.volSet=true;LD.tip='used';LD.tipLast='Y2';loadPanel();runEnter();announce('The gel has been loaded for you: ladder in well 1, Evidence-1 through Suspect Y-2 in wells 2 to 7, and fruit DNA in well 8.');});
+$('#run-lid').addEventListener('click',()=>{R.lid=true;$('#run-lid').textContent='✓ Lid closed';$('#run-lid').setAttribute('aria-disabled','true');rfb('good','<strong>Lid closed.</strong> Never run a gel with the lid off. The buffer carries current that can shock you.');updPower();drawRun();});
+$('#lead-ok').addEventListener('click',()=>{R.leads='ok';$('#lead-ok').classList.add('picked');$('#lead-rev').classList.remove('picked');rfb('good','<strong>Leads connected.</strong> Red to red, black to black.');updPower();drawRun();});
+$('#lead-rev').addEventListener('click',()=>{R.leads='rev';$('#lead-rev').classList.add('picked');$('#lead-ok').classList.remove('picked');rfb('','');updPower();drawRun();announce('Leads connected.');});
+$('#run-volt').addEventListener('input',e=>{R.V=+e.target.value;$('#run-volt-val').textContent=R.V+' V';e.target.setAttribute('aria-valuetext',R.V+' volts');if(R.on){R.maxV=Math.max(R.maxV,R.V);hotCheck();}drawRun();});
+function hotCheck(){if(R.V>150&&!R.warnedHot){R.warnedHot=true;rfb('warn','<strong>That\'s a high voltage.</strong> More voltage means more current and heat. The gel can warm unevenly or even melt, and bands come out blurry and curved ("smiling"). The manual calls for 100 V.');}}
+function rfb(kind,html){const f=$('#run-fb');f.className='fb'+(kind?' '+kind:'');f.innerHTML=html;}
+$('#run-power').addEventListener('click',()=>{
+  if(!R.on){R.on=true;R.maxV=Math.max(R.maxV,R.V);updPower();
+    if(R.V<100)rfb('warn',`<strong>Running at ${R.V} V.</strong> That works, but slowly. The manual uses 100 V. You can adjust the voltage while it runs.`);
+    else if(R.V===100)rfb('good','<strong>Running at 100 V.</strong> Watch the blue dye front. Bubbles at the electrodes tell you current is flowing. DNA itself is invisible until it is stained!');
+    hotCheck();R.last=0;R.raf=requestAnimationFrame(runStep);announce('Power on.');}
+  else stopRun('manual');
+});
+function runStep(ts){if(!R.on)return;const dt=Math.min(.05,(ts-(R.last||ts))/1000);R.last=ts;
+  const simDt=dt*2; R.min+=simDt; R.p+=(R.leads==='rev'?-1:1)*simDt*(R.V/100)/30;
+  drawRun();
+  if(R.leads==='rev'&&R.p<-0.12){stopRun('rev');return;}
+  if(R.p>=1.35){stopRun('over');return;}
+  if(R.p>=0.97&&!R.nearAnn){R.nearAnn=true;announce('The dye front is near the end of the gel.');}
+  R.raf=requestAnimationFrame(runStep);}
+function stopRun(why){R.on=false;updPower();drawRun();
+  if(R.leads==='rev'){rfb('bad','<strong>The dye moved UP, out of the wells and into the buffer!</strong> The leads were reversed, so the negative DNA moved toward the red (positive) electrode, which you had wired to the top. In a real lab these samples would be lost. Here we\'ll restore them. Reconnect the leads correctly and run again.');
+    techLog.push('Ran the gel with the leads reversed.');renderScores();R.p=0;R.min=0;R.leads=null;$('#lead-rev').classList.remove('picked');record('p4',false);updPower();drawRun();return;}
+  if(why==='over'){rfb('bad','<strong>You ran the gel too long.</strong> The dye front ran off the end of the gel, and so did the smallest ladder fragments. Your case samples are still on the gel, so you can continue. Next time, stop when the dye is about 90% of the way down.');R.overRun=true;}
+  else if(R.p<0.7){rfb('warn',`<strong>The dye has only gone ${Math.round(R.p*92)}% of the way.</strong> Bands that are close in size (like 700 and 800 bp) won't be separated yet. Turn the power back on and let it run until the dye front nears the end (about 30 minutes at 100 V).`);return;}
+  else rfb('good',`<strong>Power off.</strong> The dye ran ${Math.round(R.p*92)}% of the gel in about ${Math.round(R.min)} minutes. Now disconnect the leads and remove the gel.`);
+  $('#run-remove').disabled=false;$('#run-remove').focus();}
+$('#run-remove').addEventListener('click',()=>{R.removed=true;$('#run-remove').disabled=true;$('#run-stain').disabled=false;$$('#run-lid,#lead-ok,#lead-rev,#run-volt').forEach(b=>b.disabled=true);updPower();
+  rfb('good','<strong>Gel removed.</strong> Leads disconnected, lid off, gel slid into the staining tray. The DNA is still invisible. Only the blue tracking dye shows.');$('#run-stain').focus();});
+$('#run-stain').addEventListener('click',()=>{R.stained=true;$('#run-stain').disabled=true;$('#run-view').disabled=false;
+  rfb('good','<strong>Stained.</strong> The DNA stain binds to DNA wherever it is in the gel. Each band is millions of identical DNA copies sitting together.');$('#run-view').focus();});
+$('#run-view').addEventListener('click',()=>{$('#run-view').disabled=true;showRead();});
+function showRead(){
+  const lanes=runLanes();const blur=R.maxV>150?(R.maxV-150)/25:0;
+  $('#read-area').hidden=false;
+  $('#read-gel').innerHTML=gelSVG({lanes,p:Math.min(R.p,1.35),blur,interactive:true,ladderLabels:true,skipLabels:[900],title:'Your stained gel. Each band is a selectable button.'});
+  wireBands($('#read-gel'),'#band-readout');
+  $('#read-table').innerHTML=gelTable(lanes.map(l=>({...l,bands:(l.bands||[]).filter(b=>Math.min(R.p,1.35)*dCrime(b.s)<=1)})),'Bands seen in each lane of your gel');
+  const cont=LD.wells.map((w,i)=>w&&w.contam?i+1:null).filter(Boolean);
+  $('#contam-note').innerHTML=cont.length?`<p class="note warn" style="padding:.6rem .8rem"><strong>Look at lane${cont.length>1?'s':''} ${cont.join(', ')}.</strong> You loaded ${cont.length>1?'them':'it'} with a reused tip, and faint extra bands from the previous sample were carried over. In a real case this contamination could make an innocent person look like a match, or ruin the evidence. That is why the manual says to use a fresh tip for every tube.</p>`:'';
+  if(blur>0)$('#contam-note').innerHTML+=`<p class="note warn" style="padding:.6rem .8rem"><strong>Fuzzy bands:</strong> you ran at ${R.maxV} V. The extra heat blurred your bands.</p>`;
+  $('#h-read').focus();
+  if(!R.quizzed){R.quizzed=true;
+    mcqChain($('#read-quiz'),[
+      {q:'Look at locus 1 (Evidence-1, Suspect X-1, Suspect Y-1). What do you see?',options:[
+        {t:'Only Suspect X-1 matches the evidence.',ok:false,fb:'Measure each band. Compare all three lanes.'},
+        {t:'All three lanes have the same two bands (700 and 400 bp), so locus 1 can\'t tell the brothers apart.',ok:true,fb:'Brothers often share alleles. One locus isn\'t enough.'},
+        {t:'Neither suspect matches the evidence.',ok:false,fb:'Look again. The bands line up across all three lanes.'}]},
+      {q:'Now look at locus 2 (Evidence-2, Suspect X-2, Suspect Y-2). What do you see?',options:[
+        {t:'Suspect X-2 matches: 800 and 350 bp.',ok:false,fb:'Measure X-2\'s lower band. Is it at 350?'},
+        {t:'Suspect Y-2 matches the evidence at both bands (800 and 350 bp). Suspect X-2 has 800 and 500 bp.',ok:true,fb:'X shares the 800 bp allele but not the 350 bp allele.'},
+        {t:'Both suspects match at locus 2.',ok:false,fb:'Check the lower band in each lane.'}]},
+      {q:'Based on your gel, whose DNA matches the evidence from under the victim\'s fingernails?',options:[
+        {t:'Suspect X',ok:false,fb:'X is excluded at locus 2. Even one mismatch means the DNA didn\'t come from X.'},
+        {t:'Suspect Y',ok:true,fb:'Y matches at both loci. Real forensic labs would test about 20 STR loci before reporting a match.'},
+        {t:'It can\'t be determined',ok:false,fb:'Locus 1 alone was inconclusive, but locus 2 settles it.'}]},
+      {q:'Why did the brothers share bands at locus 1 and one band at locus 2?',options:[
+        {t:'Siblings inherit their alleles from the same two parents, so they often share some alleles.',ok:true,fb:'That is also why identical twins (answer-sheet question 7) are a special problem.'},
+        {t:'Their samples were contaminated.',ok:false,fb:'Shared alleles are expected in relatives. No contamination is needed to explain it.'},
+        {t:'All humans have the same bands at every locus.',ok:false,fb:'If that were true, DNA fingerprinting wouldn\'t work.'}]},
+      {q:'Your fruit DNA lane is a smear near the well instead of sharp bands. Why?',options:[
+        {t:'Extracted genomic DNA is huge and randomly broken into pieces of many sizes. PCR products are copies of one defined region, so they are all the same length.',ok:true,fb:'Sharp bands mean many molecules of the same size, and that is exactly what PCR makes.'},
+        {t:'Fruit DNA isn\'t negatively charged.',ok:false,fb:'All DNA is negatively charged. The fruit DNA did enter the gel.'},
+        {t:'The fruit DNA was loaded backwards.',ok:false,fb:'There is no "backwards" for a well. Think about fragment sizes.'}]}
+    ],'p4',()=>markDone('s-p4'));}
+}
+
+/* ====================================================================
+   PATERNITY
+   ==================================================================== */
+(function(){
+  const LAD=[1000,900,800,700,600,500,400,300,200].map(s=>({s,i:s===500?1.5:.8}));
+  const LOCI=[
+    {name:'Locus A',M:[500,300],C:[650,500],AF1:[650,400],AF2:[650,200]},
+    {name:'Locus B',M:[800,450],C:[450,350],AF1:[900,600],AF2:[700,350]},
+    {name:'Locus C',M:[600],C:[600,250],AF1:[600,400],AF2:[750,250]}];
+  const toB=a=>a.length===1?[{s:a[0],i:1.9,note:'one bright band: two copies of the same allele (homozygous)'}]:a.map(s=>({s,i:1}));
+  const allRows=[];
+  LOCI.forEach(L=>{
+    const lanes=[{label:'Ladder',bands:LAD},{label:'Mother',bands:toB(L.M)},{label:'Child',bands:toB(L.C)},{label:'AF1',bands:toB(L.AF1)},{label:'AF2',bands:toB(L.AF2)}];
+    lanes.forEach(l=>l.bands.forEach(b=>{if(l.label!=='Ladder')b.info=`${L.name}, ${l.label}: band at about ${b.s} bp${b.note?' ('+b.note+')':''}.`;}));
+    const d=el('div',{class:'figure',style:'flex:1 1 300px;max-width:420px'});
+    d.innerHTML=gelSVG({lanes,d:makeD(1150,170),interactive:true,ladderLabels:true,skipLabels:[900],laneW:56,heading:L.name,L:260,title:`Paternity gel, ${L.name}. Each band is a selectable button.`});
+    $('#pat-gels').appendChild(d);
+    lanes.slice(1).forEach(l=>allRows.push({label:`${L.name}: ${l.label}`,bands:l.bands}));
+  });
+  wireBands($('#pat-gels'),'#pat-readout');
+  $('#pat-table').innerHTML=gelTable(allRows,'Bands in each paternity lane by locus');
+  const fq=(L,mat,pat,who)=>[
+    {q:`${L.name}: Which of the child's bands came from the mother?`,options:L.C.map(s=>({t:`${s} bp`,ok:s===mat,fb:s===mat?`The mother has a ${mat} bp band too${L.M.length===1?' (she is homozygous)':''}. So the child's other band, ${pat} bp, is paternal.`:`The mother has no ${s} bp band, so it must have come from the father.`}))},
+    {q:`${L.name}: The child's paternal band is ${pat} bp. Which alleged father(s) have it?`,options:[
+      {t:'AF1 only',ok:who==='AF1',fb:who==='AF1'?'':'Measure AF1\'s and AF2\'s bands again.'},
+      {t:'AF2 only',ok:who==='AF2',fb:who==='AF2'?'AF1 is excluded at this locus.':'Measure each man\'s bands again.'},
+      {t:'Both AF1 and AF2',ok:who==='both',fb:who==='both'?'Both men carry a 650 bp allele, so this locus can\'t tell them apart.':'Check whether both men really have a band at '+pat+' bp.'},
+      {t:'Neither',ok:false,fb:'One of the men does have this band. Look again.'}]}];
+  mcqChain($('#pat-quiz'),[...fq(LOCI[0],500,650,'both'),...fq(LOCI[1],450,350,'AF2'),...fq(LOCI[2],600,250,'AF2'),
+    {q:'What is your conclusion?',options:[
+      {t:'AF1 is the biological father.',ok:false,fb:'AF1 lacks the child\'s paternal allele at loci B and C, so he is excluded.'},
+      {t:'AF1 is excluded. AF2 has the child\'s paternal allele at every locus tested, so he cannot be excluded and is very likely the father.',ok:true,fb:'Exclusions are definite. A match is reported as a probability, and real labs test 15–20 loci so they can report more than 99.9%.'},
+      {t:'Neither man can be the father.',ok:false,fb:'AF2 carries the paternal allele at all three loci.'}]},
+    {q:'Why couldn\'t Locus A alone settle the case?',options:[
+      {t:'Both men happen to carry the 650 bp allele, and common alleles are shared by many unrelated people.',ok:true,fb:'That is why multiple loci are always tested.'},
+      {t:'The mother has no bands at Locus A.',ok:false,fb:'The mother has bands at 500 and 300 bp.'},
+      {t:'The child has three bands at Locus A.',ok:false,fb:'The child has two bands, as expected.'}]}
+  ],'pat',()=>markDone('s-pat'));
+})();
+
+/* ====================================================================
+   ANSWER SHEET
+   ==================================================================== */
+const QS=['What is the purpose of the soap in this extraction procedure?',
+ 'Give one reason why we would add salt to the extraction solution.',
+ 'What role does ethanol play in this procedure?',
+ 'Which tissue yields the most DNA? Give a possible reason.',
+ 'Do you think we can use this same procedure to extract DNA from animal tissue? Explain.',
+ 'Examine your stained gel. Which "suspect" DNA matches the "evidence" DNA? Explain using both loci.',
+ 'If the two suspects had been identical twins, how would it have influenced the results?',
+ 'In your own words, explain how PCR lets scientists analyze a tiny crime-scene sample or detect a virus in a COVID test.',
+ 'What is the difference between an STR and a VNTR, and why do they make good DNA fingerprints?',
+ 'In the paternity case, explain how you decided which alleged father could be excluded.'];
+const saved=store.get('answers',{});
+$('#stu-name').value=saved.name||'';
+const list=$('#ans-list');
+QS.forEach((q,i)=>{const id='ans'+(i+1);const w=el('div');w.innerHTML=`<label class="field" for="${id}">${i+1}. ${esc(q)}</label><textarea id="${id}"></textarea>`;list.appendChild(w);$('#'+id).value=saved[id]||'';});
+let tmr;function saveAns(){clearTimeout(tmr);tmr=setTimeout(()=>{const o={name:$('#stu-name').value};QS.forEach((_,i)=>o['ans'+(i+1)]=$('#ans'+(i+1)).value);store.set('answers',o);
+  if(QS.every((_,i)=>o['ans'+(i+1)].trim().length>10))markDone('s-ans');},400);}
+$('#s-ans').addEventListener('input',saveAns);
+function answersText(){let t=`Lab 13 Virtual Lab: DNA Extraction and Fingerprinting\nName: ${$('#stu-name').value}\nDate: ${new Date().toLocaleDateString()}\n\n`;
+  QS.forEach((q,i)=>{t+=`${i+1}. ${q}\n${$('#ans'+(i+1)).value||'(no answer)'}\n\n`;});
+  t+='Simulation record (questions answered / correct on first try):\n';Object.keys(SECTION_NAMES).forEach(k=>{const s=scores[k];t+=`- ${SECTION_NAMES[k]}: ${s?s.n:0} / ${s?s.first:0}\n`;});
+  if(techLog.length)t+='Technique notes:\n'+techLog.map(x=>'- '+x).join('\n')+'\n';return t;}
+$('#ans-download').addEventListener('click',()=>{try{const b=new Blob([answersText()],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(b);
+  a.download='Lab13_answers_'+($('#stu-name').value||'student').replace(/\s+/g,'_')+'.txt';document.body.appendChild(a);a.click();a.remove();$('#ans-msg').textContent='Download started.';}
+  catch(e){$('#ans-msg').textContent='Download was blocked here. Use Copy or Print instead.';}});
+$('#ans-copy').addEventListener('click',async()=>{const t=answersText();try{await navigator.clipboard.writeText(t);$('#ans-msg').textContent='Answers copied. Paste them into your Canvas submission.';}
+  catch(e){const ta=el('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');$('#ans-msg').textContent='Answers copied.';}catch(_){$('#ans-msg').textContent='Copy was blocked. Please use Download or Print.';}ta.remove();}});
+$('#ans-print').addEventListener('click',()=>window.print());
+renderScores();
+
+/* ---------- start ---------- */
+renderP1(false);
+const last=store.get('last','s-overview');go(sections.some(s=>s.id===last)?last:'s-overview',false);
+})();
+</script>
+</body>
+</html>
